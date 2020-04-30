@@ -3,13 +3,15 @@
   "private": true,
   "scripts": {
     "prestart": "npm install --silent",
-    "start": "node run-start",
+    "minify": "node run/minify",
+    "start": "node run/start",
     "pretest": "npm install --silent",
-    "test": "node run-test"
+    "test": "node run/test"
   },
   "devDependencies": {
-    "bootstrap": "4.4.1",
     "benchmark": "2.1.4",
-    "postcss": "7.0.27"
+    "bootstrap": "4.4.1",
+    "postcss": "7.0.27",
+    "terser": "^4.6.12"
   }
 }

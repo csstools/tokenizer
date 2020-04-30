@@ -2,11 +2,12 @@
 
 This repository contains an experimental tokenizer for PostCSS that follows the [CSS Syntax Specification](https://drafts.csswg.org/css-syntax/).
 
-As of April 24, 2020, these benchmarks were averaged from my local machine:
+As of April 30, 2020, these benchmarks were averaged from my local machine:
 
 ```
-PostCSS Tokenizer 7.0.27:      49548 tokens in  7 ms
-PostCSS Tokenizer Development: 60458 tokens in 14 ms (2.0 times slower)
+PostCSS Tokenizer 7.0.27:            49548 tokens in 10 ms
+PostCSS Tokenizer Development (min): 60458 tokens in 14 ms (1.4 times slower)
+PostCSS Tokenizer Development:       60458 tokens in 18 ms (1.8 times slower)
 ```
 
 ## Collecting PostCSS Tokenizer Benchmarks

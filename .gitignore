@@ -1,5 +1,7 @@
 node_modules
 package-lock.json
 results
+tokenizer/min
+tokenizer/web
 .*
 !.gitignore
