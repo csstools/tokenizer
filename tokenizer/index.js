@@ -13,24 +13,21 @@ var STOP = 0x002E
 var FS   = 0x002F
 var ZERO = 0x0030
 var NINE = 0x0039
-var AT   = 0x0040
 var UP_A = 0x0041
 var UP_E = 0x0045
-var UP_F = 0x0046
 var UP_Z = 0x005A
 var BS   = 0x005C
 var LDSH = 0x005F
 var LC_A = 0x0061
 var LC_E = 0x0065
-var LC_F = 0x0066
 var LC_Z = 0x007A
 var CTRL = 0x0080
-var L_RB = 0x0028
-var R_RB = 0x0029
-var L_SB = 0x005B
-var R_SB = 0x005C
-var L_CB = 0x007B
-var R_CB = 0x007D
+var COMMENT_TOKEN = 0x0041
+var SPACE_TOKEN   = 0x0009
+var NUMBER_TOKEN  = 0x0039
+var NAME_TOKEN    = 0x0045
+var HASH_TOKEN    = 0x005A
+var STRING_TOKEN  = 0x0022
 
 module.exports = tokenizer
 
@@ -46,7 +43,7 @@ function tokenizer(css, cb) {
 	var typ
 	while (pos < len) {
 		cp0 = css.charCodeAt(pos + 0) || 0
-		typ = 'delimiter'
+		typ = cp0
 		switch (cp0) {
 			// comment
 			case FS:
@@ -95,7 +92,7 @@ function tokenizer(css, cb) {
 					case cp1 > LC_A && cp1 < LC_Z && cp1:
 					// digit
 					case cp1 > ZERO && cp1 < NINE && cp1:
-						consumeName(2, 'identifier:hash')
+						consumeName(2, HASH_TOKEN)
 						break
 					default:
 						++pos
@@ -134,7 +131,7 @@ function tokenizer(css, cb) {
 							case CR:
 								break
 							default:
-								consumeName(3, 'identifier:named')
+								consumeName(3, NAME_TOKEN)
 								break
 						}
 						break
@@ -152,7 +149,7 @@ function tokenizer(css, cb) {
 					// consume-name: name: letters
 					case cp1 > UP_A && cp1 < UP_Z && cp1:
 					case cp1 > LC_A && cp1 < LC_Z && cp1:
-						consumeName(1, 'identifier:named')
+						consumeName(1, NAME_TOKEN)
 						break
 					default:
 						++pos
@@ -171,72 +168,6 @@ function tokenizer(css, cb) {
 						++pos
 				}
 				break
-			case AT:
-				cp1 = css.charCodeAt(pos + 1)
-				switch (cp1) {
-					// identifier-start: hyphen-minus
-					case DASH:
-						cp2 = css.charCodeAt(pos + 2)
-						switch (cp2) {
-							// identifier-start: hyphen-minus: valid escape
-							case BS:
-								cp3 = css.charCodeAt(pos + 3)
-								switch (cp3) {
-									case LF:
-									case FF:
-									case CR:
-										break
-									default:
-										consumeName(4, 'identifier:at')
-										break
-								}
-								break
-							// identifier-start: hyphen-minus: name-start: letter
-							case UP_A:
-							case UP_Z:
-							case LC_A:
-							case LC_Z:
-							// identifier-start: hyphen-minus: name-start: low-line
-							case LDSH:
-							// identifier-start: hyphen-minus: name-start: non-ascii
-							case cp2 > CTRL && cp2:
-							// identifier-start: hyphen-minus: name-start: letter
-							case cp2 > UP_A && cp2 < UP_Z && cp2:
-							case cp2 > LC_A && cp2 < LC_Z && cp2:
-								consumeName(3, 'identifier:at')
-								break
-						}
-					// identifier-start: name-start: letter
-					case UP_A:
-					case UP_Z:
-					case LC_A:
-					case LC_Z:
-					// identifier-start: name-start: low-line
-					case LDSH:
-					// identifier-start: name-start: non-ascii
-					case cp1 > CTRL && cp1:
-					// identifier-start: name-start: letter
-					case cp1 > UP_A && cp1 < UP_Z && cp1:
-					case cp1 > LC_A && cp1 < LC_Z && cp1:
-						consumeName(2, 'identifier:at')
-						break
-					// valid escape
-					case BS:
-						cp2 = css.charCodeAt(pos + 2)
-						switch (cp2) {
-							case LF:
-							case FF:
-							case CR:
-								break
-							default:
-								consumeName(3, 'identifier:at')
-								break
-						}
-						break
-					default:
-						++pos
-				}
-				break
 			// name or delimiter
 			case BS:
 				cp1 = css.charCodeAt(pos + 1)
@@ -247,7 +178,7 @@ function tokenizer(css, cb) {
 					case CR:
 						break
 					default:
-						consumeName(2, 'identifier:named')
+						consumeName(2, NAME_TOKEN)
 						break
 				}
 				break
@@ -272,28 +203,13 @@ function tokenizer(css, cb) {
 			case cp0 > LC_A && cp0 < LC_Z && cp0:
 			// low-line
 			case LDSH:
-				consumeName(1, 'identifier:named')
-				break
-			// openers
-			case L_RB:
-			case L_SB:
-			case L_CB:
-				pos += 1
-				typ = 'opener'
-				break
-			// closers
-			case R_RB:
-			case R_SB:
-			case R_CB:
-				pos += 1
-				typ = 'closer'
+				consumeName(1, NAME_TOKEN)
 				break
 			default:
 				pos += 1
-				typ = 'delimiter'
 				break
 		}
-		cb.call(null, typ, css.slice(old, pos), old, old = pos)
+		cb(typ, css.slice(old, pos), old, old = pos)
 	}
 	return tokens
 	function consumeComment(shift) {
@@ -314,7 +230,7 @@ function tokenizer(css, cb) {
 			continue
 		}
 		pos += shift
-		typ = 'comment'
+		typ = COMMENT_TOKEN
 	}
 	function consumeWhitespace(shift) {
 		while (pos + shift < len) {
@@ -332,7 +248,7 @@ function tokenizer(css, cb) {
 			break
 		}
 		pos += shift
-		typ = 'whitespace'
+		typ = SPACE_TOKEN
 	}
 	function consumeNumber(shift, isDecimal, isScientific) {
 		while (pos + shift < len) {
@@ -394,7 +310,7 @@ function tokenizer(css, cb) {
 			break
 		}
 		pos += shift
-		typ = 'number'
+		typ = NUMBER_TOKEN
 	}
 	function consumeName(shift, name) {
 		while (pos + shift < len) {
@@ -457,6 +373,6 @@ function tokenizer(css, cb) {
 			break
 		}
 		pos += shift
-		typ = 'string'
+		typ = STRING_TOKEN
 	}
 }

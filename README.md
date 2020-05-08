@@ -33,11 +33,34 @@ PostCSS Tokenizer Development:       60458 tokens in 18 ms (1.8 times slower)
 - From the project directory, run `npm run test:parser`.
 - The resulting benchmarks of each parser will be displayed.
 
-As of May 8, 2020, these benchmarks were averaged from my local machine:
+As of May 8, 2020, these benchmarks were taken from my local machine:
 
 ```
+node run test && node run test-parser
+```
+
+```
+Compressing PostCSS Tokenizer...
+
+PostCSS Tokenizer Development:       1541 B
+PostCSS Tokenizer Development (min):  671 B
+PostCSS Tokenizer Development (web):  662 B
+
+Collecting PostCSS Tokenizer Benchmarks...
+
+PostCSS Tokenizer 7.0.29:            49548 tokens in  9 ms
+PostCSS Tokenizer Development (min): 60551 tokens in 16 ms (1.7 times slower)
+PostCSS Tokenizer Development:       60551 tokens in 17 ms (1.8 times slower)
+
+
+Compressing PostCSS Parser...
+
+PostCSS Parser Development:       1250 B
+PostCSS Parser Development (min):  795 B
+PostCSS Parser Development (web):  767 B
+
 Collecting PostCSS Parser Benchmarks...
 
-PostCSS Parser 7.0.27:       1204 nodes in 14 ms
-PostCSS Experimental Parser: 13680 nodes in 20 ms (1.4 times slower)
+PostCSS Parser 7.0.29:        1204 nodes in 16 ms
+PostCSS Experimental Parser: 13686 nodes in 17 ms (1.1 times slower)
 ```
