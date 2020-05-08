@@ -3,36 +3,29 @@ require('./minify')
 let write = process.stdout.write.bind(process.stdout)
 let indent = (a, b) => ' '.repeat(Math.abs(a.length - b.length))
 let mstime = hz => `${Math.round((1 / hz) * 1000).toString()} ms`
+0
+let ParserPrd = require('postcss/lib/parser')
+let parserDev = require('../parser')
 
-let tokenizePrd = require('postcss/lib/tokenize')
-let tokenizeDev = require('../tokenizer')
-let tokenizeDevMin = require('../tokenizer/min')
-
+let bootstrapCSSPath = require.resolve('bootstrap/dist/css/bootstrap.css')
 let bootstrapCSS = require('fs').readFileSync(
-	require.resolve('bootstrap/dist/css/bootstrap.css'),
+	bootstrapCSSPath,
 	'utf8'
 )
 
-let tokenList = []
+let tokenList = [[],[]]
 
-write('\nCollecting PostCSS Tokenizer Benchmarks...\n')
+write('\nCollecting PostCSS Parser Benchmarks...\n')
 
 Object.entries({
-	'PostCSS Tokenizer 7.0.27': () => {
-		let tokenized = tokenizePrd({ css: bootstrapCSS })
-		let tokens = []
-		while (!tokenized.endOfFile()) tokens.push(tokenized.nextToken())
-		tokenList[0] = tokens
+	'PostCSS Parser 7.0.27': () => {
+		let parsed = new ParserPrd({ css: bootstrapCSS }, { from: bootstrapCSSPath })
+		parsed.parse()
+		tokenList[0] = parsed.root.nodes
 	},
-	'PostCSS Tokenizer Development': () => {
-		let tokens = []
-		tokenizeDev(bootstrapCSS, (...token) => tokens.push(token))
-		tokenList[1] = tokens
-	},
-	'PostCSS Tokenizer Development (min)': () => {
-		let tokens = []
-		tokenizeDevMin(bootstrapCSS, (...token) => tokens.push(token))
-		tokenList[2] = tokens
+	'PostCSS Experimental Parser': () => {
+		let root = parserDev(bootstrapCSS)
+		tokenList[1] = root.nodes
 	}
 }).reduce(
 	(suite, [name, func]) => suite.add(name, func),
@@ -47,7 +40,7 @@ Object.entries({
 		let slowestHz = results.slice().pop().hz
 		write('\n')
 		results.forEach(({ hz, name, tokens }) => {
-			write(`${name}: ${indent(longestName, name)}${indent(tokens.length, prdTokens)}${tokens.length} tokens in ${indent(mstime(slowestHz), mstime(hz))}${mstime(hz)}`)
+			write(`${name}: ${indent(longestName, name)}${indent(tokens.length, prdTokens)}${tokens.length} nodes in ${indent(mstime(slowestHz), mstime(hz))}${mstime(hz)}`)
 			if (name !== prdName) {
 				if (hz > prdHz) write(` (${(hz / prdHz).toFixed(1)} times faster)`)
 				else write(` (${(prdHz / hz).toFixed(1)} times slower)`)

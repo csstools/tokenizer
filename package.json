@@ -6,12 +6,14 @@
     "minify": "node run/minify",
     "start": "node run/start",
     "pretest": "npm install --silent",
-    "test": "node run/test"
+    "test": "node run/test",
+    "test:tokenizer": "node run/test",
+    "test:parser": "node run/test-parser"
   },
   "devDependencies": {
     "benchmark": "2.1.4",
     "bootstrap": "4.4.1",
-    "postcss": "7.0.27",
-    "terser": "^4.6.12"
+    "postcss": "7.0.29",
+    "terser": "^4.6.13"
   }
 }

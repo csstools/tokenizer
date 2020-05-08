@@ -26,3 +26,18 @@ PostCSS Tokenizer Development:       60458 tokens in 18 ms (1.8 times slower)
 
 - Goto this [CodePen](https://codepen.io/jonneal/pen/YzyZwGj?editors=0100).
 - Edit and style the CSS from within the CSS.
+
+## Collecting PostCSS Parser Benchmarks
+
+- Checkout this project
+- From the project directory, run `npm run test:parser`.
+- The resulting benchmarks of each parser will be displayed.
+
+As of May 8, 2020, these benchmarks were averaged from my local machine:
+
+```
+Collecting PostCSS Parser Benchmarks...
+
+PostCSS Parser 7.0.27:       1204 nodes in 14 ms
+PostCSS Experimental Parser: 13680 nodes in 20 ms (1.4 times slower)
+```

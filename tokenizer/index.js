@@ -34,7 +34,7 @@ var R_CB = 0x007D
 
 module.exports = tokenizer
 
-function tokenizer(css) {
+function tokenizer(css, cb) {
 	var len = css.length
 	var old = 0
 	var pos = 0
@@ -134,7 +134,7 @@ function tokenizer(css) {
 							case CR:
 								break
 							default:
-								consumeName(3, 'identifier')
+								consumeName(3, 'identifier:named')
 								break
 						}
 						break
@@ -152,7 +152,7 @@ function tokenizer(css) {
 					// consume-name: name: letters
 					case cp1 > UP_A && cp1 < UP_Z && cp1:
 					case cp1 > LC_A && cp1 < LC_Z && cp1:
-						consumeName(1, 'identifier')
+						consumeName(1, 'identifier:named')
 						break
 					default:
 						++pos
@@ -247,7 +247,7 @@ function tokenizer(css) {
 					case CR:
 						break
 					default:
-						consumeName(2, 'identifier')
+						consumeName(2, 'identifier:named')
 						break
 				}
 				break
@@ -272,7 +272,7 @@ function tokenizer(css) {
 			case cp0 > LC_A && cp0 < LC_Z && cp0:
 			// low-line
 			case LDSH:
-				consumeName(1, 'identifier')
+				consumeName(1, 'identifier:named')
 				break
 			// openers
 			case L_RB:
@@ -293,7 +293,7 @@ function tokenizer(css) {
 				typ = 'delimiter'
 				break
 		}
-		tokens.push([typ, css.slice(old, pos), old, old = pos])
+		cb.call(null, typ, css.slice(old, pos), old, old = pos)
 	}
 	return tokens
 	function consumeComment(shift) {
