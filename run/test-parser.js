@@ -6,11 +6,13 @@ let mstime = hz => `${Math.round((1 / hz) * 1000).toString()} ms`
 
 let ParserPrd = require('postcss/lib/parser')
 let parserDev = require('../parser')
+let postcssSelectorParser = require('postcss-selector-parser')()
+let { parse: postcssValuesParser } = require('postcss-values-parser')
 
 let bootstrapCSSPath = require.resolve('bootstrap/dist/css/bootstrap.css')
 let bootstrapCSS = require('fs').readFileSync(bootstrapCSSPath, 'utf8')
 
-let tokenList = [[],[]]
+let tokenList = [[],[],[]]
 
 write('\nCollecting PostCSS Parser Benchmarks...\n')
 
@@ -20,9 +22,25 @@ Object.entries({
 		parsed.parse()
 		tokenList[0] = parsed.root.nodes
 	},
+	'PostCSS + Selector + Value Parser': () => {
+		let parsed = new ParserPrd({ css: bootstrapCSS }, { from: bootstrapCSSPath })
+		parsed.parse()
+		parsed.root.walk(node => {
+			switch (node.type) {
+				case 'decl':
+					postcssValuesParser(node.value)
+					break
+				case 'rule':
+					postcssSelectorParser.processSync(node.selector)
+					break
+			}
+		})
+
+		tokenList[1] = parsed.root.nodes
+	},
 	'PostCSS Experimental Parser': () => {
 		let root = parserDev(bootstrapCSS)
-		tokenList[1] = root.nodes
+		tokenList[2] = root.nodes
 	}
 }).reduce(
 	(suite, [name, func]) => suite.add(name, func),
