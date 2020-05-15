@@ -6,6 +6,7 @@ var CR   = 0x000D
 var DBLQ = 0x0022
 var HASH = 0x0023
 var SNGQ = 0x0027
+var L_RB = 0x0028
 var STAR = 0x002A
 var PLUS = 0x002B
 var DASH = 0x002D
@@ -13,6 +14,7 @@ var STOP = 0x002E
 var FS   = 0x002F
 var ZERO = 0x0030
 var NINE = 0x0039
+var AT   = 0x0040
 var UP_A = 0x0041
 var UP_E = 0x0045
 var UP_Z = 0x005A
@@ -22,357 +24,329 @@ var LC_A = 0x0061
 var LC_E = 0x0065
 var LC_Z = 0x007A
 var CTRL = 0x0080
-var COMMENT_TOKEN = 0x0041
-var SPACE_TOKEN   = 0x0009
-var NUMBER_TOKEN  = 0x0039
-var NAME_TOKEN    = 0x0045
-var HASH_TOKEN    = 0x005A
-var STRING_TOKEN  = 0x0022
 
-module.exports = tokenizer
+var SPACE_TYPE   = 0x0009 // ↹
+var STRING_TYPE  = 0x0022 // "
+var NUMBER_TYPE  = 0x0030 // 0
+var COMMENT_TYPE = 0x0041 // A
+var NAME_TYPE    = 0x0045 // E
+var HASH_TYPE    = 0x005A // Z
+var FUNC_TYPE    = 0x0065 // e
+var AT_TYPE      = 0x007A // z
 
-function tokenizer(css, cb) {
-	var len = css.length
-	var old = 0
-	var pos = 0
-	var tokens = []
-	var cp0
-	var cp1
-	var cp2
-	var cp3
-	var typ
-	while (pos < len) {
-		cp0 = css.charCodeAt(pos + 0) || 0
-		typ = cp0
-		switch (cp0) {
-			// comment
-			case FS:
-				cp1 = css.charCodeAt(pos + 1)
-				switch (cp1) {
-					case STAR:
-						consumeComment(2)
-						break
-					default:
-						++pos
-				}
-				break
-			// whitespace
-			case TAB:
-			case SP:
-			case LF:
-			case FF:
-			case CR:
-				consumeWhitespace(1)
-				break
-			// string
-			case DBLQ:
-			case SNGQ:
-				consumeString(1)
-				break
-			// name or delimiter
-			case HASH:
-				cp1 = css.charCodeAt(pos + 1)
-				switch (cp1) {
-					// hyphen-minus
-					case DASH:
-					// digit
-					case ZERO:
-					case NINE:
-					// letter
-					case UP_A:
-					case UP_Z:
-					case LC_A:
-					case LC_Z:
-					// low-line
-					case LDSH:
-					// non-ascii
-					case cp1 > CTRL && cp1:
-					// letter
-					case cp1 > UP_A && cp1 < UP_Z && cp1:
-					case cp1 > LC_A && cp1 < LC_Z && cp1:
-					// digit
-					case cp1 > ZERO && cp1 < NINE && cp1:
-						consumeName(2, HASH_TOKEN)
-						break
-					default:
-						++pos
-				}
-				break
-			// digit
-			case PLUS:
-			case DASH:
-				cp1 = css.charCodeAt(pos + 1)
-				switch (cp1) {
-					// number-start: plus-minus: digit
-					case ZERO:
-					case NINE:
-					// number-start: plus-minus: digit
-					case cp1 > ZERO && cp1 < NINE && cp1:
-						consumeNumber(2)
-						break
-					// number-start: plus-minus: full-stop
-					case STOP:
-						cp2 = css.charCodeAt(pos + 2)
-						switch (cp2) {
-							// number-start: plus-minus: full-stop: digit
-							case ZERO:
-							case NINE:
-							case cp2 > ZERO && cp2 < NINE && cp2:
-								consumeNumber(3, true)
+module.exports = (function () {
+	return tokenize
+	/**
+	 * Reads CSS and executes a function for each captured token.
+	 * @param {string} css - CSS being tokenized.
+	 * @param {callback} cb - Callback function executed for each token.
+	 */
+	function tokenize(css, cb) {
+		var size = css.length
+
+		/** @type {number} Starting index within the CSS of the current token. */
+		var prev = 0
+
+		/** @type {number} Ending index within the CSS of the current token. */
+		var spot = 0
+
+		/** @type {number} Number of offset characters between the token value and its opening delimiter. */
+		var lead
+
+		/** @type {number} Number of offset characters between the token value and its closing delimiter. */
+		var tail
+
+		/** @type {TokenType} Identifying ID of current token. */
+		var type
+		var cc0
+
+		while (spot < size) {
+			cc0 = css.charCodeAt(spot)
+			type = cc0
+			lead = 0
+			tail = 0
+
+			switch (true) {
+				/* Comment or Delimiter */
+				case cc0 === FS:
+					++spot
+					if (css.charCodeAt(spot) === STAR) {
+						type = COMMENT_TYPE
+						lead = 2
+						while (++spot < size) {
+							if (
+								css.charCodeAt(spot) === STAR &&
+								css.charCodeAt(spot + 1) === FS
+							) {
+								++spot
+								++spot
+								tail = 2
 								break
-						}
-						break
-					// consume-name: valid escape
-					case BS:
-						cp2 = css.charCodeAt(pos + 2)
-						switch (cp2) {
-							case LF:
-							case FF:
-							case CR:
-								break
-							default:
-								consumeName(3, NAME_TOKEN)
-								break
-						}
-						break
-					// consume-name: name: name-start: letters
-					case UP_A:
-					case UP_Z:
-					case LC_A:
-					case LC_Z:
-					// consume-name: name: hypen-minus
-					case DASH:
-					// consume-name: name: name-start: low-ascii
-					case LDSH:
-					// consume-name: name: name-start: non-ascii
-					case cp1 > CTRL && cp1:
-					// consume-name: name: letters
-					case cp1 > UP_A && cp1 < UP_Z && cp1:
-					case cp1 > LC_A && cp1 < LC_Z && cp1:
-						consumeName(1, NAME_TOKEN)
-						break
-					default:
-						++pos
-				}
-				break
-			case STOP:
-				cp1 = css.charCodeAt(pos + 1)
-				switch (cp1) {
-					// number-start: full-stop: digit
-					case ZERO:
-					case NINE:
-					case cp1 > ZERO && cp1 < NINE && cp1:
-						consumeNumber(2, true)
-						break
-					default:
-						++pos
-				}
-				break
-			// name or delimiter
-			case BS:
-				cp1 = css.charCodeAt(pos + 1)
-				switch (cp1) {
-					// newline
-					case LF:
-					case FF:
-					case CR:
-						break
-					default:
-						consumeName(2, NAME_TOKEN)
-						break
-				}
-				break
-			// digit
-			case ZERO:
-			case NINE:
-			case cp0 > ZERO && cp0 < NINE && cp0:
-				consumeNumber(1)
-				break
-			// name-start: letter
-			case UP_A:
-			case UP_Z:
-			case LC_A:
-			case LC_Z:
-			// name-start: low-dash
-			case LDSH:
-			// name-start: non-ascii
-			case cp0 > CTRL && cp0:
-			// name-start: letter
-			case cp0 > UP_A && cp0 < UP_Z:
-			case cp0 > UP_A && cp0 < UP_Z && cp0:
-			case cp0 > LC_A && cp0 < LC_Z && cp0:
-			// low-line
-			case LDSH:
-				consumeName(1, NAME_TOKEN)
-				break
-			default:
-				pos += 1
-				break
-		}
-		cb(typ, css.slice(old, pos), old, old = pos)
-	}
-	return tokens
-	function consumeComment(shift) {
-		capture: while (pos + shift < len) {
-			cp0 = css.charCodeAt(pos + shift)
-			cp1 = css.charCodeAt(pos + shift + 1)
-			switch (cp0) {
-				// whitespace
-				case STAR:
-					switch (cp1) {
-						case FS:
-							++shift
-							++shift
-							break capture
-					}
-			}
-			++shift
-			continue
-		}
-		pos += shift
-		typ = COMMENT_TOKEN
-	}
-	function consumeWhitespace(shift) {
-		while (pos + shift < len) {
-			cp0 = css.charCodeAt(pos + shift)
-			switch (cp0) {
-				// whitespace
-				case TAB:
-				case SP:
-				case LF:
-				case FF:
-				case CR:
-					++shift
-					continue
-			}
-			break
-		}
-		pos += shift
-		typ = SPACE_TOKEN
-	}
-	function consumeNumber(shift, isDecimal, isScientific) {
-		while (pos + shift < len) {
-			cp0 = css.charCodeAt(pos + shift)
-			switch (cp0) {
-				// digit
-				case ZERO:
-				case NINE:
-					++shift
-					continue
-				// digit
-				case cp0 > ZERO && cp0 < NINE && cp0:
-					++shift
-					continue
-				// full-stop
-				case !isDecimal && STOP:
-					cp1 = css.charCodeAt(pos + shift + 1)
-					switch (cp1) {
-						// full-stop: digit
-						case ZERO:
-						case NINE:
-						// full-stop: digit
-						case cp1 > ZERO && cp1 < NINE && cp1:
-							++shift
-							++shift
-							isDecimal = true
-							continue
-					}
-					break
-				case !isScientific && UP_E:
-				case !isScientific && LC_E:
-					cp1 = css.charCodeAt(pos + shift + 1)
-					switch (cp1) {
-						// scientific: plus-minus
-						case PLUS:
-						case DASH:
-							cp2 = css.charCodeAt(pos + shift + 2)
-							switch (cp2) {
-								case ZERO:
-								case NINE:
-								case cp2 > ZERO && cp2 < NINE && cp2:
-									isDecimal = true
-									isScientific = true
-									++shift
-									++shift
-									++shift
-									continue
 							}
-							break
-						case ZERO:
-						case NINE:
-						case cp1 > ZERO && cp1 < NINE && cp1:
-							isScientific = true
-							++shift
-							++shift
-							continue
-					}
-			}
-			break
-		}
-		pos += shift
-		typ = NUMBER_TOKEN
-	}
-	function consumeName(shift, name) {
-		while (pos + shift < len) {
-			cp0 = css.charCodeAt(pos + shift)
-			switch (cp0) {
-				// valid escape
-				case BS:
-					cp1 = css.charCodeAt(pos + shift + 1)
-					switch (cp3) {
-						case LF:
-						case FF:
-						case CR:
-							break
-						default:
-							++shift
-							++shift
-							continue
+						}
 					}
 					break
-				// name: name-start: letter
-				case UP_A:
-				case UP_Z:
-				case LC_A:
-				case LC_Z:
-				// name: name-start: low-line
-				case LDSH:
-				// name: digit
-				case ZERO:
-				case NINE:
-				// name: hyphen-minus
-				case DASH:
-				case cp0 > ZERO && cp0 < NINE && cp0:
-				// name: name-start: non-ascii
-				case cp0 > CTRL && cp0:
-				// name: name-start: letter
-				case cp0 > UP_A && cp0 < UP_Z && cp0:
-				case cp0 > LC_A && cp0 < LC_Z && cp0:
-					++shift
-					continue
-			}
-			break
-		}
-		pos += shift
-		typ = name
-	}
-	function consumeString(shift) {
-		var END = cp0
-		while (pos + shift < len) {
-			cp0 = css.charCodeAt(pos + shift)
-			switch (cp0) {
-				case END:
-					++shift
+
+				/* String */
+				case cc0 === DBLQ:
+				case cc0 === SNGQ:
+					type = STRING_TYPE
+					lead = 1
+					while (++spot < size) {
+						cc1 = css.charCodeAt(spot)
+						if (cc1 === BS) {
+							if (spot + 1 < size) {
+								++spot
+							}
+							continue
+						}
+						if (cc1 === cc0) {
+							++spot
+							tail = 1
+							break
+						}
+					}
 					break
-				case BS:
-					if (pos + shift + 1 < len) ++shift
+
+				/* Hash-Identifier or Delimiter */
+				case cc0 === HASH:
+					++spot
+					if (
+						spot < size &&
+						isIdentifier(css.charCodeAt(spot))
+					) {
+						type = HASH_TYPE
+						spot += (lead = 1)
+						consumeIdentifier()
+					}
+					break
+
+				/* Number or Named Identifier or Delimiter */
+				case cc0 === DASH:
+					cc0 = css.charCodeAt(spot + 1)
+					if (
+						(cc0 === DASH && ++spot) ||
+						(isIdentifierStart(cc0) && ++spot) ||
+						(cc0 === BS && !isVerticalSpace(css.charCodeAt(spot + 2)) && ++spot && ++spot)
+					) {
+						type = NAME_TYPE
+						++spot
+						consumeIdentifier()
+						break
+					}
+
+				/* Number or Delimiter */
+				case cc0 === PLUS:
+					++spot
+					cc0 = css.charCodeAt(spot)
+					if (cc0 && isInteger(cc0)) {
+						type = NUMBER_TYPE
+						++spot
+						consumeNumber()
+					} else if (cc0 === STOP) {
+						cc0 = css.charCodeAt(spot + 1)
+						if (cc0 && isInteger(cc0)) {
+							type = NUMBER_TYPE
+							++spot
+							++spot
+							consumeNumber(1)
+						}
+					}
+					break
+
+				/* Number or Delimiter */
+				case cc0 === STOP:
+					++spot
+					if (isInteger(css.charCodeAt(spot))) {
+						type = NUMBER_TYPE
+						++spot
+						consumeNumber(1)
+					}
+					break
+
+				/* Identifier or Delimiter */
+				case cc0 === BS:
+					++spot
+					if (!isVerticalSpace(css.charCodeAt(spot))) {
+						type = NAME_TYPE
+						++spot
+						consumeIdentifier()
+					}
+					break
+
+				/* Space */
+				case isVerticalSpace(cc0):
+				case isHorizontalSpace(cc0):
+					do {
+						++spot
+						cc0 = css.charCodeAt(spot)
+					} while (
+						isHorizontalSpace(cc0) ||
+						isVerticalSpace(cc0)
+					)
+					type = SPACE_TYPE
+					break
+
+				/* At-Identifier or Delimiter */
+				case cc0 === AT:
+					++spot
+					if (
+						spot < size &&
+						isIdentifier(css.charCodeAt(spot))
+					) {
+						type = AT_TYPE
+						spot += (lead = 1)
+						consumeIdentifier()
+					}
+					break
+
+				/* Identifier or Function */
+				case isIdentifierStart(cc0):
+					type = NAME_TYPE
+					++spot
+					consumeIdentifier()
+					if (css.charCodeAt(spot) === L_RB) {
+						type = FUNC_TYPE
+						tail = 1
+						++spot
+					}
+					break
+
+				/* Number */
+				case isInteger(cc0):
+					type = NUMBER_TYPE
+					++spot
+					consumeNumber()
+					break
+
+				/* Delimiter */
 				default:
-					++shift
-					continue
+					++spot
+					break
 			}
-			break
+
+			cb(type, prev, prev = spot, lead, tail)
 		}
-		pos += shift
-		typ = STRING_TOKEN
+
+		function consumeIdentifier() {
+			while (spot < size) {
+				if (
+					(
+						isIdentifier(css.charCodeAt(spot)) &&
+						++spot
+					) ||
+					(
+						css.charCodeAt(spot) === BS &&
+						!isVerticalSpace(css.charCodeAt(spot + 1)) &&
+						++spot &&
+						++spot
+					)
+				) {
+					continue
+				}
+				break
+			}
+		}
+
+		/** Consume all possible numbers. */
+		function consumeNumber(isDecimal, isScientific) {
+			while (spot < size) {
+				if (
+					(
+						isInteger(css.charCodeAt(spot)) &&
+						++spot
+					) ||
+					(
+						!isDecimal &&
+						css.charCodeAt(spot) === STOP &&
+						isInteger(css.charCodeAt(spot + 1)) &&
+						(isDecimal = 1) &&
+						++spot &&
+						++spot
+					) ||
+					(
+						!isScientific &&
+						(cc1 = css.charCodeAt(spot)) &&
+						(cc1 === UP_E || cc1 === LC_E) &&
+						(cc1 = css.charCodeAt(spot + 1)) &&
+						(
+							(
+								isInteger(cc1) &&
+								++spot
+							) || (
+								(cc1 === PLUS || cc1 === DASH) &&
+								isInteger(css.charCodeAt(spot + 1)) &&
+								++spot &&
+								++spot
+							)
+						) &&
+						(isScientific = 1)
+					)
+				) {
+					continue
+				}
+				break
+			}
+			tail = spot
+			consumeIdentifier()
+			tail = tail === spot ? 0 : spot - tail
+		}
 	}
-}
+
+	function isVerticalSpace(cc) {
+		return cc === LF || cc === FF || cc === CR
+	}
+
+	function isHorizontalSpace(cc) {
+		return cc === TAB || cc === SP
+	}
+
+	function isInteger(cc) {
+		return cc >= ZERO && cc <= NINE
+	}
+
+	/** Returns whether the character code is a low-dash, non-ASCII, or letter. */
+	function isIdentifierStart(cc) {
+		return (
+			(cc === LDSH) ||
+			(cc > CTRL) ||
+			(cc >= UP_A && cc <= UP_Z) ||
+			(cc >= LC_A && cc <= LC_Z)
+		)
+	}
+
+	/** Returns whether the character code is a low-dash, dash, non-ASCII, number, or letter. */
+	function isIdentifier(cc) {
+		return (
+			(cc === LDSH) ||
+			(cc === DASH) ||
+			(cc > CTRL) ||
+			(cc >= ZERO && cc <= NINE) ||
+			(cc >= UP_A && cc <= UP_Z) ||
+			(cc >= LC_A && cc <= LC_Z)
+		)
+	}
+})()
+
+
+/**
+* @typedef {0x0009} WhitespaceTokenType
+* @typedef {0x0022} StringTokenType
+* @typedef {0x0030} NumberTokenType
+* @typedef {0x0041} CommentTokenType
+* @typedef {0x0045} NamedIdentifierTokenType
+* @typedef {0x005A} HashIdentifierTokenType
+* @typedef {0x0065} FunctionTokenType
+* @typedef {0x007A} AtIdentifierTokenType
+* @typedef {WhitespaceTokenType | StringTokenType | NumberTokenType | CommentTokenType | NamedIdentifierTokenType | HashIdentifierTokenType | FunctionTokenType | AtIdentifierTokenType} TokenType - Identifying ID of current token.
+*/
+
+/**
+* Callback function executed for each token.
+* @callback callback
+* @param {TokenType} type - Identifying ID of current token.
+* @param {number} open - Starting index within the CSS of the current token.
+* @param {string} shut - Ending index within the CSS of the current token.
+* @param {number} lead - Offset length between the token value and its opening delimiter, which is zero if there is none.
+* @param {number} tail - Offset length between the token value and its closing delimiter, which is zero if there is none.
+*/

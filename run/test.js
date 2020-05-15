@@ -16,7 +16,7 @@ let tokenList = []
 write('\nCollecting PostCSS Tokenizer Benchmarks...\n')
 
 Object.entries({
-	'PostCSS Tokenizer 7.0.29': () => {
+	'PostCSS Tokenizer 7.0.30': () => {
 		let tokenized = tokenizePrd({ css: bootstrapCSS })
 		let tokens = []
 		while (!tokenized.endOfFile()) tokens.push(tokenized.nextToken())
@@ -24,16 +24,18 @@ Object.entries({
 	},
 	'PostCSS Tokenizer Development': () => {
 		let tokens = []
-		tokenizeDev(bootstrapCSS, (type, value, startIndex, endIndex) =>
-			tokens.push([type, value, startIndex, endIndex])
-		)
+		tokenizeDev(bootstrapCSS, (type, prev, spot, lead, tail) => {
+			tokens.push([type, prev, spot, lead, tail])
+		})
 		tokenList[1] = tokens
 	},
 	'PostCSS Tokenizer Development (min)': () => {
 		let tokens = []
-		tokenizeDevMin(bootstrapCSS, (...token) => tokens.push(token))
+		tokenizeDevMin(bootstrapCSS, (type, prev, spot, lead, tail) => {
+			tokens.push([type, prev, spot, lead, tail])
+		})
 		tokenList[2] = tokens
-	},
+	}
 }).reduce(
 	(suite, [name, func]) => suite.add(name, func),
 	new (require('benchmark').Suite)()

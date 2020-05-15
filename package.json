@@ -12,8 +12,8 @@
   },
   "devDependencies": {
     "benchmark": "2.1.4",
-    "bootstrap": "4.4.1",
-    "postcss": "7.0.29",
+    "bootstrap": "4.5.0",
+    "postcss": "7.0.30",
     "postcss-selector-parser": "^6.0.2",
     "postcss-value-parser": "^4.1.0",
     "postcss-values-parser": "^3.2.1",

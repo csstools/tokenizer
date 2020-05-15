@@ -8,12 +8,14 @@ var R_SB = 0x005D // ]
 var L_CB = 0x007B // {
 var R_CB = 0x007D // }
 
-var COMMENT_TOKEN = 0x0041 // A
-var SPACE_TOKEN   = 0x0009 // ↹
-var NUMBER_TOKEN  = 0x0039 // 9
-var NAME_TOKEN    = 0x0045 // E
-var HASH_TOKEN    = 0x005A // Z
-var STRING_TOKEN  = 0x0022 // "
+var SPACE_TYPE   = 0x0009 // ↹
+var STRING_TYPE  = 0x0022 // "
+var NUMBER_TYPE  = 0x0030 // 0
+var COMMENT_TYPE = 0x0041 // A
+var NAME_TYPE    = 0x0045 // E
+var HASH_TYPE    = 0x005A // Z
+var FUNC_TYPE    = 0x0065 // e
+var AT_TYPE      = 0x007A // z
 
 module.exports = parse
 
@@ -36,18 +38,22 @@ class CSSValue extends CSSNode {
 }
 
 class CSSComment extends CSSValue {
-	constructor (value) {
+	constructor (value, isUnclosed) {
 		super()
 		this.value = value
+		this.delimiterStart = '/*'
+		this.delimiterEnd = isUnclosed ? '' : '*/'
 	}
 	toJSON() {
 		return {
 			type: this.type,
-			value: this.value
+			value: this.value,
+			delimiterStart: this.delimiterStart,
+			delimiterEnd: this.delimiterEnd
 		}
 	}
 	toString() {
-		return this.value
+		return this.delimiterStart + this.value + this.delimiterEnd
 	}
 }
 
@@ -68,19 +74,22 @@ class CSSWhitespace extends CSSValue {
 }
 
 class CSSString extends CSSValue {
-	constructor (value = '') {
+	constructor (value = '', delimiterStart = '"', delimiterEnd = '"') {
 		super()
 		this.value = value
+		this.delimiterStart = delimiterStart
+		this.delimiterEnd = delimiterEnd
 	}
 	toJSON() {
 		return {
 			type: this.type,
 			value: this.value,
-			quote: this.quote
+			delimiterStart: this.delimiterStart,
+			delimiterEnd: this.delimiterEnd
 		}
 	}
 	toString() {
-		return this.value
+		return this.delimiterStart + this.value + this.delimiterEnd
 	}
 }
 
@@ -88,15 +97,17 @@ class CSSAtIdentifier extends CSSValue {
 	constructor (value = '--') {
 		super()
 		this.value = value
+		this.delimiterStart = '@'
 	}
 	toJSON() {
 		return {
 			type: this.type,
-			value: this.value
+			value: this.value,
+			delimiterStart: this.delimiterStart
 		}
 	}
 	toString() {
-		return '@' + this.value
+		return this.delimiterStart + this.value
 	}
 }
 
@@ -104,15 +115,17 @@ class CSSHashIdentifier extends CSSValue {
 	constructor (value = '--') {
 		super()
 		this.value = value
+		this.delimiterStart = '#'
 	}
 	toJSON() {
 		return {
 			type: this.type,
-			value: this.value
+			value: this.value,
+			delimiterStart: this.delimiterStart
 		}
 	}
 	toString() {
-		return '#' + this.value
+		return this.delimiterStart + this.value
 	}
 }
 
@@ -194,8 +207,8 @@ class CSSBlock extends CSSValue {
 }
 
 class CSSFunction extends CSSBlock {
-	constructor (name = '--', delimiterStart = '(', delimiterEnd = ')') {
-		super(delimiterStart, delimiterEnd)
+	constructor (name = '--', isUnclosed = false) {
+		super('(', isUnclosed ? '' : ')')
 		this.name = name
 	}
 	toJSON() {
@@ -212,108 +225,82 @@ class CSSFunction extends CSSBlock {
 	}
 }
 
+/**
+* Reads CSS and parses it into an object model.
+* @param {string} css - CSS being tokenized.
+* @returns {CSSBlock} CSS Object Model.
+*/
 function parse(css) {
-	var LastClass = CSSBlock
-	var root = new LastClass('', '')
+	var root = new CSSBlock('', '')
 	var parent = root
 
-	var lastType
-	var lastValue
-
-	CSSTokenizer(css, (type, value) => {
+	CSSTokenizer(css, (type, open, shut, lead, tail) => {
 		switch (type) {
 			// CSSComment
-			case COMMENT_TOKEN:
-				LastClass = CSSComment
-				parent.append(new LastClass(value))
+			case COMMENT_TYPE:
+				parent.append(new CSSComment(css.slice(open + lead, shut - tail), tail))
 				break
 			// CSSWhitespace
-			case SPACE_TOKEN:
-				LastClass = CSSWhitespace
-				parent.append(new LastClass(value))
+			case SPACE_TYPE:
+				parent.append(new CSSWhitespace(css.slice(open, shut)))
 				break
 			// CSSString
-			case STRING_TOKEN:
-				LastClass = CSSString
-				parent.append(new LastClass(value))
+			case STRING_TYPE:
+				parent.append(new CSSString(css.slice(open + lead, shut - tail), css[open]))
 				break
 			// CSSHashIdentifier
-			case HASH_TOKEN:
-				LastClass = CSSHashIdentifier
-				parent.append(new LastClass(value.slice(1)))
+			case HASH_TYPE:
+				parent.append(new CSSHashIdentifier(css.slice(open + lead, shut)))
 				break
 			// CSSNumber
-			case NUMBER_TOKEN:
-				LastClass = CSSNumber
-				parent.append(new LastClass(value, ''))
+			case NUMBER_TYPE:
+				parent.append(new CSSNumber(css.slice(open, shut - tail), css.slice(shut - tail, shut)))
+				break
+			// CSSAtIdentifier
+			case AT_TYPE:
+				parent.append(new CSSAtIdentifier(css.slice(open + lead, shut)))
+				break
+			// CSSFunction
+			case FUNC_TYPE:
+				parent.append(parent = new CSSFunction(css.slice(open, shut - tail), true))
 				break
 			// CSSNamedIdentifier
-			case NAME_TOKEN:
-				switch (lastType) {
-					case AT:
-						LastClass = CSSAtIdentifier
-						parent.nodes.pop()
-						parent.append(new LastClass(value))
-						break
-					case NUMBER_TOKEN:
-						parent.nodes.slice(-1).pop().unit = value
-						break
-					default:
-						LastClass = CSSNamedIdentifier
-						parent.append(new LastClass(value))
-				}
+			case NAME_TYPE:
+				parent.append(new CSSNamedIdentifier(css.slice(open, shut)))
 				break
 			// opening-round-bracket, (
 			case L_RB:
-				switch (LastClass) {
-					// CSSFunction
-					case CSSNamedIdentifier:
-						LastClass = CSSFunction
-						parent.nodes.pop()
-						parent.append(parent = new LastClass(lastValue, value, ''))
-						break
-					// CSSBlock
-					default:
-						LastClass = CSSBlock
-						parent.append(parent = new LastClass(value, ''))
-				}
-				break
-			// closing-round-bracket, )
-			case R_RB:
-				switch (parent.delimiterStart) {
-					// CSSBlock
-					case '(':
-						parent.delimiterEnd = value
-						parent = parent.parent
-						LastClass = CSSBlock
-						break
-					// CSSDelimiter
-					default:
-						LastClass = CSSDelimiter
-						parent.append(new LastClass(value))
-				}
-				break
 			// opening-square-bracket, [
 			case L_SB:
 			// opening-curly-bracket, {
 			case L_CB:
 				// CSSBlock
-				LastClass = CSSBlock
-				parent.append(parent = new LastClass(value, ''))
+				parent.append(parent = new CSSBlock(css.slice(open, shut), ''))
+				break
+				// closing-round-bracket, )
+			case R_RB:
+				switch (parent.delimiterStart) {
+					// CSSBlock
+					case '(':
+						parent.delimiterEnd = ')'
+						parent = parent.parent
+						break
+					// CSSDelimiter
+					default:
+						parent.append(new CSSDelimiter(')'))
+				}
 				break
 			// closing-square-bracket, ]
 			case R_SB:
 				switch (parent.delimiterStart) {
 					// CSSBlock
 					case '[':
-						parent.delimiterEnd = value
+						parent.delimiterEnd = ']'
 						parent = parent.parent
-						LastClass = CSSBlock
 						break
 					// CSSDelimiter
 					default:
-						LastClass = CSSDelimiter
-						parent.append(new LastClass(value))
+						parent.append(new CSSDelimiter(']'))
 				}
 				break
 			// closing-curly-bracket, }
@@ -321,23 +308,18 @@ function parse(css) {
 				switch (parent.delimiterStart) {
 					// CSSBlock
 					case '{':
-						parent.delimiterEnd = value
+						parent.delimiterEnd = '}'
 						parent = parent.parent
-						LastClass = CSSBlock
 						break
 					// CSSDelimiter
 					default:
-						LastClass = CSSDelimiter
-						parent.append(new LastClass(value))
+						parent.append(new CSSDelimiter('}'))
 				}
 				break
 			// CSSDelimiter
 			default:
-				LastClass = CSSDelimiter
-				parent.append(new LastClass(value))
+				parent.append(new CSSDelimiter(css.slice(open, shut)))
 		}
-		lastType = type
-		lastValue = value
 	})
 
 	return root
