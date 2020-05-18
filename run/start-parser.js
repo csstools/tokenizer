@@ -1,13 +1,8 @@
-require('./minify-parser')
-
 let { mkdirSync, readFileSync, writeFileSync } = require('fs')
 let { join } = require('path')
 
-let tokenizePrd = require('postcss/lib/tokenize')
-let tokenizeDev = require('../tokenizer')
-let tokenizeDevMin = require('../tokenizer/min')
 let ParserPrd = require('postcss/lib/parser')
-let parserDev = require('../parser')
+let parserDev = require('../parse')
 let postcssSelectorParser = require('postcss-selector-parser')
 let { parse: postcssValuesParser } = require('postcss-values-parser')
 

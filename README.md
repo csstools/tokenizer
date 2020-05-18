@@ -65,3 +65,8 @@ PostCSS Experimental Parser:       56024 nodes in 10 ms (1.6 times faster)
 PostCSS Parser 7.0.30:              6240 nodes in 15 ms
 PostCSS + Selector + Value Parser: 28491 nodes in 86 ms (5.5 times slower)
 ```
+
+## Todo
+
+- [ ] Test emojis, because rememebr 
+- [ ] 

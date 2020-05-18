@@ -1,12 +1,9 @@
-require('./minify')
-
 let write = process.stdout.write.bind(process.stdout)
 let indent = (a, b) => ' '.repeat(Math.abs(a.length - b.length))
 let mstime = (hz) => `${Math.round((1 / hz) * 1000).toString()} ms`
 
 let tokenizePrd = require('postcss/lib/tokenize')
-let tokenizeDev = require('../tokenizer')
-let tokenizeDevMin = require('../tokenizer/min')
+let tokenizeDev = require('../tokenize')
 
 let bootstrapCSSPath = require.resolve('bootstrap/dist/css/bootstrap.css')
 let bootstrapCSS = require('fs').readFileSync(bootstrapCSSPath, 'utf8')
@@ -22,19 +19,12 @@ Object.entries({
 		while (!tokenized.endOfFile()) tokens.push(tokenized.nextToken())
 		tokenList[0] = tokens
 	},
-	'PostCSS Tokenizer Development': () => {
+	'PostCSS Tokenizer Dev': () => {
 		let tokens = []
 		tokenizeDev(bootstrapCSS, (type, prev, spot, lead, tail) => {
 			tokens.push([type, prev, spot, lead, tail])
 		})
 		tokenList[1] = tokens
-	},
-	'PostCSS Tokenizer Development (min)': () => {
-		let tokens = []
-		tokenizeDevMin(bootstrapCSS, (type, prev, spot, lead, tail) => {
-			tokens.push([type, prev, spot, lead, tail])
-		})
-		tokenList[2] = tokens
 	}
 }).reduce(
 	(suite, [name, func]) => suite.add(name, func),

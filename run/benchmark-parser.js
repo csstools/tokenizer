@@ -1,11 +1,9 @@
-require('./minify-parser')
-
 let write = process.stdout.write.bind(process.stdout)
 let indent = (a, b) => ' '.repeat(Math.abs(a.length - b.length))
 let mstime = hz => `${Math.round((1 / hz) * 1000).toString()} ms`
 
 let ParserPrd = require('postcss/lib/parser')
-let parserDev = require('../parser')
+let parserDev = require('../parse')
 let postcssSelectorParser = require('postcss-selector-parser')()
 let { parse: postcssValuesParser } = require('postcss-values-parser')
 
@@ -43,8 +41,8 @@ Object.entries({
 		// so as not to negatively skew the results of the combined parsers
 		tokenList[1] = { length: 28491 }
 	},
-	'PostCSS Experimental Parser': () => {
-		let root = parserDev(bootstrapCSS)
+	'PostCSS Parser Dev': () => {
+		parserDev(bootstrapCSS)
 
 		// hard-code the number of nodes parsed from start-parser.js
 		// so as not to negatively skew the results of the combined parsers
