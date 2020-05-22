@@ -27,7 +27,7 @@ console.log(
 )
 
 function buildWebStd() {
-	let filepath = join(__dirname, '..', 'cssom', 'legacy.js')
+	let filepath = join(__dirname, '..', 'cssom', 'index.js')
 	let filedata = replaceModuleRequireWithReturn(
 		trimTrailingScript(
 			replaceRequireStatements(
@@ -54,7 +54,7 @@ function buildWebStd() {
 }
 
 function buildWebMin() {
-	let filepath = join(__dirname, '..', 'cssom', 'legacy.js')
+	let filepath = join(__dirname, '..', 'cssom', 'index.js')
 	let filedata = replaceModuleRequireWithReturn(
 		trimTrailingScript(
 			replaceRequireStatements(

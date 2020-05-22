@@ -2,13 +2,20 @@
   "name": "tokenizer",
   "private": true,
   "scripts": {
+    "prebuild": "npm install --silent",
+    "build": "node run/build",
     "prestart": "npm install --silent",
-    "minify": "node run/minify",
     "start": "node run/start",
+    "prestart:tokenize": "node run/start-tokenize",
+    "start:tokenize": "node run/start-tokenize",
+    "prestart:parse": "node run/start-parse",
+    "start:parse": "node run/start-parse",
     "pretest": "npm install --silent",
     "test": "node run/benchmark",
+    "pretest:tokenize": "npm install --silent",
     "test:tokenize": "node run/benchmark-tokenize",
-    "test:parser": "node run/benchmark-parse"
+    "pretest:parse": "npm install --silent",
+    "test:parse": "node run/benchmark-parse"
   },
   "devDependencies": {
     "benchmark": "2.1.4",
@@ -17,6 +24,6 @@
     "postcss-selector-parser": "^6.0.2",
     "postcss-value-parser": "^4.1.0",
     "postcss-values-parser": "^3.2.1",
-    "terser": "^4.6.13"
+    "terser": "^4.7.0"
   }
 }
