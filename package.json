@@ -6,9 +6,9 @@
     "minify": "node run/minify",
     "start": "node run/start",
     "pretest": "npm install --silent",
-    "test": "node run/test",
-    "test:tokenizer": "node run/test",
-    "test:parser": "node run/test-parser"
+    "test": "node run/benchmark",
+    "test:tokenize": "node run/benchmark-tokenize",
+    "test:parser": "node run/benchmark-parse"
   },
   "devDependencies": {
     "benchmark": "2.1.4",
