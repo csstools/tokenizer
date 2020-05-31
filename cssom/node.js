@@ -31,6 +31,15 @@ function append(...nodes) {
 	return this
 }
 
+function appendTo() {
+	var parent = this.parent
+	if (parent) {
+		var children = parent.nodes
+		childrenSplice(parent, children, children.length, 0, [this])
+	}
+	return this
+}
+
 function before(...nodes) {
 	var parent = this.parent
 	if (parent) {
@@ -142,6 +151,7 @@ var CSSParentNodeDescriptors = {
 
 var CSSChildNodeDescriptors = {
 	after: { configurable: true, writable: true, value: after },
+	appendTo: { configurable: true, writable: true, value: appendTo },
 	before: { configurable: true, writable: true, value: before },
 	next: { configurable: true, writable: true, value: next },
 	previous: { configurable: true, writable: true, value: previous },
@@ -155,6 +165,8 @@ var CSSChildNodeDescriptors = {
 class CSSNode extends Object {}
 
 class CSSValue extends CSSNode {}
+
+class CSSComponent extends CSSNode {}
 
 class CSSComment extends CSSValue {
 	constructor(initValue) {
@@ -416,6 +428,16 @@ class CSSFunction extends CSSBlock {
 	}
 }
 
+class CSSRoot extends CSSBlock {
+	constructor() {
+		super('', '')
+	}
+
+	get type() {
+		return 'CSSRoot'
+	}
+}
+
 module.exports = {
 	CSSNode,
 	CSSValue,
@@ -428,5 +450,6 @@ module.exports = {
 	CSSNumber,
 	CSSDelimiter,
 	CSSBlock,
-	CSSFunction
+	CSSFunction,
+	CSSRoot
 }

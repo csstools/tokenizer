@@ -5,14 +5,14 @@ var R_SB = 0x005D // ]
 var L_CB = 0x007B // {
 var R_CB = 0x007D // }
 
-var SPACE_TYPE   = 0x0009 // ↹ ===   9
-var STRING_TYPE  = 0x0022 // " ===  34
-var NUMBER_TYPE  = 0x0030 // 0 ===  48
-var COMMENT_TYPE = 0x0041 // A ===  65
-var NAME_TYPE    = 0x0045 // E ===  69
-var HASH_TYPE    = 0x005A // Z ===  90
-var FUNC_TYPE    = 0x0065 // e === 101
-var AT_TYPE      = 0x007A // z === 122
+var SPACE_TYPE   = 0x0009 // ↹
+var STRING_TYPE  = 0x0022 // "
+var NUMBER_TYPE  = 0x0030 // 0
+var COMMENT_TYPE = 0x0041 // A
+var NAME_TYPE    = 0x0045 // E
+var HASH_TYPE    = 0x005A // Z
+var FUNC_TYPE    = 0x0065 // e
+var AT_TYPE      = 0x007A // z
 
 module.exports = (function (CSSOM, tokenize) {
 	var CSSBlock = CSSOM.CSSBlock
@@ -128,6 +128,6 @@ module.exports = (function (CSSOM, tokenize) {
 		return root
 	}
 })(
-	require('../cssom'),
-	require('../tokenize')
+	require('../../cssom'),
+	require('../../tokenize')
 )

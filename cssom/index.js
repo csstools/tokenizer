@@ -31,6 +31,14 @@ function append() {
 	return this
 }
 
+function appendTo(parent) {
+	if (parent) {
+		var children = parent.nodes
+		childrenSplice(parent, children, children.length, 0, [this])
+	}
+	return this
+}
+
 function before() {
 	var parent = this.parent
 	if (parent) {
@@ -142,6 +150,7 @@ var CSSParentNodeDescriptors = {
 
 var CSSChildNodeDescriptors = {
 	after: { configurable: true, writable: true, value: after },
+	appendTo: { configurable: true, writable: true, value: appendTo },
 	before: { configurable: true, writable: true, value: before },
 	next: { configurable: true, writable: true, value: next },
 	previous: { configurable: true, writable: true, value: previous },
@@ -155,6 +164,8 @@ var CSSChildNodeDescriptors = {
 function CSSNode() {} CSSNode.prototype = Object.create(Object.prototype)
 
 function CSSValue() {} CSSValue.prototype = Object.create(CSSNode.prototype)
+
+function CSSComponent() {} CSSComponent.prototype = Object.create(CSSNode.prototype)
 
 function CSSComment(initValue) {
 
@@ -373,7 +384,7 @@ CSSBlock.prototype = Object.create(CSSValue.prototype, {
 	toJSON: { configurable: true, writable: true, value: function () {
 		return {
 			type: this.type,
-			nodes: this.nodes.map(node => node.toJSON()),
+			nodes: this.nodes.map(toJSON),
 			delimiterStart: this.delimiterStart,
 			delimiterEnd: this.delimiterEnd
 		}
@@ -386,7 +397,7 @@ CSSBlock.prototype = Object.create(CSSValue.prototype, {
 	type: { configurable: true, get: function () {
 		return 'CSSBlock'
 	} }
-})
+}) ;function toJSON(node) { return node.toJSON() }
 
 Object.defineProperties(CSSBlock.prototype, CSSParentNodeDescriptors)
 Object.defineProperties(CSSBlock.prototype, CSSChildNodeDescriptors)
@@ -401,7 +412,7 @@ CSSFunction.prototype = Object.create(CSSBlock.prototype, {
 		return {
 			type: this.type,
 			name: this.name,
-			nodes: this.nodes.map(node => node.toJSON()),
+			nodes: this.nodes.map(toJSON),
 			delimiterStart: this.delimiterStart,
 			delimiterEnd: this.delimiterEnd
 		}
@@ -416,6 +427,76 @@ CSSFunction.prototype = Object.create(CSSBlock.prototype, {
 	} }
 })
 
+function CSSRoot() {
+
+	CSSBlock.call(this, '', '')
+}
+CSSRoot.prototype = Object.create(CSSBlock.prototype, {
+	type: { configurable: true, get: function () {
+		return 'CSSRoot'
+	} }
+})
+
+/* CSSRule
+/* ========================================================================== */
+
+function CSSRule() {}
+
+CSSRule.prototype = Object.create(CSSComponent.prototype, {
+	toJSON: { configurable: true, writable: true, value: function () {
+		return {
+			type: this.type,
+			prelude: this.prelude.map(toJSON),
+			nodes: this.nodes.map(toJSON),
+			delimiterStart: this.delimiterStart,
+			delimiterEnd: this.delimiterEnd
+		}
+	} },
+
+	toString: { configurable: true, writable: true, value: function () {
+		return this.prelude.join('') + this.delimiterStart + this.nodes.join('') + this.delimiterEnd
+	} },
+
+	type: { configurable: true, get: function () {
+		return 'CSSRule'
+	} },
+
+	preludeAppend: { configurable: true, writable: true, value: function preludeAppend() {
+		var prelude = this.prelude
+		childrenSplice(this, prelude, prelude.length, 0, arguments)
+	} }
+})
+
+Object.defineProperties(CSSRule.prototype, CSSParentNodeDescriptors)
+Object.defineProperties(CSSRule.prototype, CSSChildNodeDescriptors)
+
+function CSSAtRule() {
+	this.prelude = []
+	this.nodes = []
+	this.delimiterStart = '{'
+	this.delimiterEnd = '}'
+}
+
+CSSAtRule.prototype = Object.create(CSSRule.prototype, {
+	type: { configurable: true, get: function () {
+		return 'CSSAtRule'
+	} }
+})
+
+function CSSStyleRule() {
+	this.prelude = []
+	this.nodes = []
+	this.delimiterStart = '{'
+	this.delimiterEnd = '}'
+}
+
+CSSStyleRule.prototype = Object.create(CSSRule.prototype, {
+	type: { configurable: true, get: function () {
+		return 'CSSStyleRule'
+	} }
+})
+
+
 module.exports = {
 	CSSNode: CSSNode,
 	CSSValue: CSSValue,
@@ -428,5 +509,9 @@ module.exports = {
 	CSSNumber: CSSNumber,
 	CSSDelimiter: CSSDelimiter,
 	CSSBlock: CSSBlock,
-	CSSFunction: CSSFunction
+	CSSFunction: CSSFunction,
+	CSSRoot: CSSRoot,
+	CSSRule: CSSRule,
+	CSSAtRule: CSSAtRule,
+	CSSStyleRule: CSSStyleRule
 }

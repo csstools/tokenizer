@@ -2,28 +2,43 @@ let write = process.stdout.write.bind(process.stdout)
 let indent = (a, b) => ' '.repeat(Math.abs(a.length - b.length))
 let mstime = (hz) => `${Math.round((1 / hz) * 1000).toString()} ms`
 
-let tokenizePrd = require('postcss/lib/tokenize')
-let tokenizeDev = require('../tokenize/tokenize-w-postcss')
-
 let bootstrapCSSPath = require.resolve('bootstrap/dist/css/bootstrap.css')
 let bootstrapCSS = require('fs').readFileSync(bootstrapCSSPath, 'utf8')
 
 let tokenList = []
 
-write('\nCollecting PostCSS Tokenizer Benchmarks...\n')
+write('\nCollecting NaN Benchmarks...\n')
 
 Object.entries({
-	'PostCSS Tokenizer 7.0.30': () => {
-		let tokenized = tokenizePrd({ css: bootstrapCSS })
-		let tokens = []
-		while (!tokenized.endOfFile()) tokens.push(tokenized.nextToken())
+	'isNaN(c)': () => {
+		const tokens = []
+
+		for (var i = 0, c; c = bootstrapCSS.charCodeAt(i); ++i) {
+			if (isNaN(c)) break
+			else tokens.push(c)
+		}
+
 		tokenList[0] = tokens
 	},
-	'PostCSS Tokenizer Dev': () => {
-		let tokenized = tokenizeDev(bootstrapCSS)
-		let tokens = []
-		while (tokenized.next()) tokens.push([tokenized.type, tokenized.open, tokenized.shut, tokenized.lead, tokenized.tail])
+	'c < 0': () => {
+		const tokens = []
+
+		for (var i = 0, c; c = bootstrapCSS.charCodeAt(i); ++i) {
+			if (c < 0) break
+			else tokens.push(c)
+		}
+
 		tokenList[1] = tokens
+	},
+	'c >= 0': () => {
+		const tokens = []
+
+		for (var i = 0, c; c = bootstrapCSS.charCodeAt(i); ++i) {
+			if (c >= 0) tokens.push(c)
+			else break
+		}
+
+		tokenList[2] = tokens
 	}
 }).reduce(
 	(suite, [name, func]) => suite.add(name, func),

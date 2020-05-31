@@ -17,8 +17,8 @@ Object.entries({
 	},
 	'cssom-tokenize.json': () => {
 		let tokens = []
-		tokenizeDev(bootstrapCSS, (type, prev, spot, lead, tail) => {
-			tokens.push([type, prev, spot, lead, tail, ...[bootstrapCSS.slice(prev, prev + lead), bootstrapCSS.slice(prev + lead, spot - tail), bootstrapCSS.slice(spot - tail, spot)].filter(Boolean)])
+		tokenizeDev(bootstrapCSS, (type, open, shut, lead, tail) => {
+			tokens.push([type, open, shut, lead, tail, ...[bootstrapCSS.slice(open, open + lead), bootstrapCSS.slice(open + lead, shut - tail), bootstrapCSS.slice(shut - tail, shut)].filter(Boolean)])
 		})
 		return tokens
 	}
