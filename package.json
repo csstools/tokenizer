@@ -20,10 +20,11 @@
   "devDependencies": {
     "benchmark": "2.1.4",
     "bootstrap": "4.5.0",
-    "postcss": "7.0.30",
+    "postcss": "7.0.31",
     "postcss-selector-parser": "^6.0.2",
     "postcss-value-parser": "^4.1.0",
     "postcss-values-parser": "^3.2.1",
-    "terser": "^4.7.0"
+    "terser": "^4.7.0",
+    "vlq": "^1.0.1"
   }
 }

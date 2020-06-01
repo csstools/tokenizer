@@ -15,7 +15,7 @@ let tokenList = [[],[],[]]
 write('\nCollecting PostCSS Parser Benchmarks...\n')
 
 Object.entries({
-	'PostCSS Parser 7.0.30': () => {
+	'PostCSS Parser 7.0.31': () => {
 		let parsed = new ParserPrd({ css: bootstrapCSS }, { from: bootstrapCSSPath })
 		parsed.parse()
 

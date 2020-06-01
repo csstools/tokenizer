@@ -8,6 +8,17 @@ let tokenizeDev = require('../tokenize')
 let bootstrapCSSPath = require.resolve('bootstrap/dist/css/bootstrap.css')
 let bootstrapCSS = readFileSync(bootstrapCSSPath, 'utf8')
 
+let types = {
+	0x0009:    'SPACE', // ␠ ===  32
+	0x0022:   'STRING', // " ===  34
+	0x0030:   'NUMBER', // 0 ===  48
+	0x0041:       'AT', // A ===  65
+	0x0043:  'COMMENT', // C ===  67
+	0x0046: 'FUNCTION', // F ===  70
+	0x0048:     'HASH', // H ===  72
+	0x004E:     'NAME', // N ===  78
+}
+
 Object.entries({
 	'postcss-tokenize-7_0_30.json': () => {
 		let tokenized = tokenizePrd({ css: bootstrapCSS })
@@ -17,8 +28,15 @@ Object.entries({
 	},
 	'cssom-tokenize.json': () => {
 		let tokens = []
-		tokenizeDev(bootstrapCSS, (type, open, shut, lead, tail) => {
-			tokens.push([type, open, shut, lead, tail, ...[bootstrapCSS.slice(open, open + lead), bootstrapCSS.slice(open + lead, shut - tail), bootstrapCSS.slice(shut - tail, shut)].filter(Boolean)])
+		tokenizeDev(bootstrapCSS, (type, line, cols, open, shut, lead, tail) => {
+			tokens.push({
+				type: types[type] || 'DELIMITER',
+				line: line,
+				col: cols,
+				leadCSS: bootstrapCSS.slice(open, open + lead),
+				mainCSS: bootstrapCSS.slice(open + lead, shut - tail),
+				tailCSS: bootstrapCSS.slice(shut - tail, shut)
+			})
 		})
 		return tokens
 	}

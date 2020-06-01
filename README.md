@@ -7,7 +7,7 @@ As of May 15, 2020, these benchmarks were averaged from my local machine:
 ```
 PostCSS Tokenizer Development:       58721 tokens in 8 ms (1.0 times faster)
 PostCSS Tokenizer Development (min): 58721 tokens in 8 ms (1.0 times faster)
-PostCSS Tokenizer 7.0.30:            49548 tokens in 8 ms
+PostCSS Tokenizer 7.0.31:            49548 tokens in 8 ms
 ```
 
 ## Collecting PostCSS Tokenizer Benchmarks
@@ -50,7 +50,7 @@ Collecting PostCSS Tokenizer Benchmarks...
 
 PostCSS Tokenizer Development:       58721 tokens in 8 ms (1.0 times faster)
 PostCSS Tokenizer Development (min): 58721 tokens in 8 ms (1.0 times faster)
-PostCSS Tokenizer 7.0.30:            49548 tokens in 8 ms
+PostCSS Tokenizer 7.0.31:            49548 tokens in 8 ms
 
 
 Compressing PostCSS Parser...
@@ -62,7 +62,7 @@ PostCSS Parser Development (web):  805 B
 Collecting PostCSS Parser Benchmarks...
 
 PostCSS Experimental Parser:       56024 nodes in 10 ms (1.6 times faster)
-PostCSS Parser 7.0.30:              6240 nodes in 15 ms
+PostCSS Parser 7.0.31:              6240 nodes in 15 ms
 PostCSS + Selector + Value Parser: 28491 nodes in 86 ms (5.5 times slower)
 ```
 

@@ -26,40 +26,41 @@ var LC_E = 0x0065 // e === 101
 var LC_Z = 0x007A // z === 122
 var CTRL = 0x0080 // � === 128
 
-var SPACE_TYPE    = 0x0009 // ␠ ===  32
-var STRING_TYPE   = 0x0022 // " ===  34
-var NUMBER_TYPE   = 0x0030 // 0 ===  48
-var AT_TYPE       = 0x0041 // A ===  65
-var COMMENT_TYPE  = 0x0043 // C ===  67
-var FUNCTION_TYPE = 0x0046 // F ===  70
-var HASH_TYPE     = 0x0048 // H ===  72
-var NAME_TYPE     = 0x004E // N ===  78
+var SPACE_TYPE    = 0x0009 // ␠ === 32
+var STRING_TYPE   = 0x0022 // " === 34
+var NUMBER_TYPE   = 0x0030 // 0 === 48
+var AT_TYPE       = 0x0041 // A === 65
+var COMMENT_TYPE  = 0x0043 // C === 67
+var FUNCTION_TYPE = 0x0046 // F === 70
+var HASH_TYPE     = 0x0048 // H === 72
+var NAME_TYPE     = 0x004E // N === 78
 
 module.exports = (function () {
 	return tokenize
 
 	/**
-	 * Reads CSS and executes a function for each captured token.
-	 * @param {string} css - CSS being tokenized.
-	 * @param {callback} cb - Callback function executed for each token.
-	 */
+	* Reads CSS and executes a function for each token.
+	* @param {string} css - CSS being tokenized.
+	* @param {callback} cb - Callback function executed for each token.
+	*/
 	function tokenize(css, cb) {
+		/** @type {number} Length of character codes that can be consumed. */
 		var size = css.length
 
-		/** @type {number} Starting index within the CSS of the current token. */
-		var open = 0
+		/** @type {number} Identifying type of the current token. */
+		var type
 
-		/** @type {number} Ending index within the CSS of the current token. */
+		/** @type {number} Index of the opening of the current token. */
+		var open
+
+		/** @type {number} Index of the closing of the current token. */
 		var shut = 0
 
-		/** @type {number} Number of offset characters between the token value and its opening delimiter. */
+		/** @type {number} Offset between the opening of the token and its main value, which is zero if there is none. */
 		var lead
 
-		/** @type {number} Number of offset characters between the token value and its closing delimiter. */
+		/** @type {number} Offset between the closing of the token and its main value, which is zero if there is none. */
 		var tail
-
-		/** @type {number} Identifying ID of current token. */
-		var type
 
 		/** @type {number} Current character code. */
 		var cc0
@@ -67,14 +68,29 @@ module.exports = (function () {
 		/** @type {number} Next character code. */
 		var cc1
 
+		/** @type {number} Current line. */
+		var line
+
+		/** @type {number} Next line. */
+		var nextLine = 0
+
+		/** @type {number} Index of the opening of the current line. */
+		var lineOpen
+
+		/** @type {number} Index of the opening of the next line. */
+		var nextLineOpen = 0
+
 		while (shut < size) {
 			cc0 = css.charCodeAt(shut)
 			type = cc0
+			open = shut
+			line = nextLine
+			lineOpen = nextLineOpen
 			lead = 0
 			tail = 0
 
 			switch (true) {
-				/* Comment or Delimiter */
+				/* Consume a Comment or Delimiter */
 				case cc0 === FS:
 					++shut
 					if (css.charCodeAt(shut) === STAR) {
@@ -82,6 +98,11 @@ module.exports = (function () {
 						lead = 2
 						while (++shut < size) {
 							if (
+								isVerticalSpace(css.charCodeAt(shut))
+							) {
+								++nextLine
+								nextLineOpen = shut + 1
+							} else if (
 								css.charCodeAt(shut) === STAR &&
 								css.charCodeAt(shut + 1) === FS
 							) {
@@ -94,7 +115,7 @@ module.exports = (function () {
 					}
 					break
 
-				/* String */
+				/* Consume a String */
 				case cc0 === DBLQ:
 				case cc0 === SNGQ:
 					type = STRING_TYPE
@@ -115,7 +136,7 @@ module.exports = (function () {
 					}
 					break
 
-				/* Hash-Identifier or Delimiter */
+				/* Consume a Hash-Identifier or Delimiter */
 				case cc0 === HASH:
 					++shut
 					if (
@@ -128,7 +149,7 @@ module.exports = (function () {
 					}
 					break
 
-				/* Number or Named Identifier or Delimiter */
+				/* Consume a Number or Named Identifier or Delimiter */
 				case cc0 === DASH:
 					cc0 = css.charCodeAt(shut + 1)
 					if (
@@ -142,7 +163,7 @@ module.exports = (function () {
 						break
 					}
 
-				/* Number or Delimiter */
+				/* Consume a Number or Delimiter */
 				case cc0 === PLUS:
 					++shut
 					cc0 = css.charCodeAt(shut)
@@ -171,30 +192,45 @@ module.exports = (function () {
 					}
 					break
 
-				/* Identifier or Delimiter */
+				/* Consume an Identifier or Delimiter */
 				case cc0 === BS:
 					++shut
 					if (!isVerticalSpace(css.charCodeAt(shut))) {
 						type = NAME_TYPE
 						++shut
 						consumeIdentifier()
+					} else {
+						++nextLine &&
+						(
+							nextLineOpen = shut + 1
+						)
 					}
 					break
 
-				/* Space */
+				/* Consume a Space */
 				case isVerticalSpace(cc0):
+					++nextLine &&
+					(
+						nextLineOpen = shut + 1
+					)
 				case isHorizontalSpace(cc0):
 					do {
 						++shut
 						cc0 = css.charCodeAt(shut)
 					} while (
 						isHorizontalSpace(cc0) ||
-						isVerticalSpace(cc0)
+						(
+							isVerticalSpace(cc0) &&
+							++nextLine &&
+							(
+								nextLineOpen = shut + 1
+							)
+						)
 					)
 					type = SPACE_TYPE
 					break
 
-				/* At-Identifier or Delimiter */
+				/* Consume an At-Identifier or Delimiter */
 				case cc0 === AT:
 					++shut
 					if (
@@ -207,7 +243,7 @@ module.exports = (function () {
 					}
 					break
 
-				/* Identifier or Function */
+				/* Consume an Identifier or Function */
 				case isIdentifierStart(cc0):
 					type = NAME_TYPE
 					++shut
@@ -219,20 +255,20 @@ module.exports = (function () {
 					}
 					break
 
-				/* Number */
+				/* Consume a Number */
 				case isInteger(cc0):
 					type = NUMBER_TYPE
 					++shut
 					consumeNumber()
 					break
 
-				/* Delimiter */
+				/* Consume a Delimiter */
 				default:
 					++shut
 					break
 			}
 
-			cb(type, open, open = shut, lead, tail)
+			cb(type, line, open - lineOpen, open, shut, lead, tail)
 		}
 
 		/** Consume an identifier. */
@@ -302,19 +338,34 @@ module.exports = (function () {
 		}
 	}
 
+	/**
+	* Returns whether the character code is a vertical space.
+	* @param {number} cc - Character code.
+	*/
 	function isVerticalSpace(cc) {
 		return cc === LF || cc === FF || cc === CR
 	}
 
+	/**
+	* Returns whether the character code is a horizontal space.
+	* @param {number} cc - Character code.
+	*/
 	function isHorizontalSpace(cc) {
 		return cc === TAB || cc === SP
 	}
 
+	/**
+	* Returns whether the character code is an integer.
+	* @param {number} cc - Character code.
+	*/
 	function isInteger(cc) {
 		return cc >= ZERO && cc <= NINE
 	}
 
-	/** Returns whether the character code is a low-dash, non-ASCII, or letter. */
+	/**
+	* Returns whether the character code is a low-dash, non-ASCII, or letter.
+	* @param {number} cc - Character code.
+	*/
 	function isIdentifierStart(cc) {
 		return (
 			(cc === LDSH) ||
@@ -324,7 +375,10 @@ module.exports = (function () {
 		)
 	}
 
-	/** Returns whether the character code is a low-dash, dash, non-ASCII, number, or letter. */
+	/**
+	* Returns whether the character code is a low-dash, dash, non-ASCII, number, or letter.
+	* @param {number} cc - Character code.
+	*/
 	function isIdentifier(cc) {
 		return (
 			(cc === LDSH) ||
@@ -340,9 +394,11 @@ module.exports = (function () {
 /**
 * Callback function executed for each token.
 * @callback callback
-* @param {number} type - Identifying ID of current token.
-* @param {number} open - Starting index within the CSS of the current token.
-* @param {number} shut - Ending index within the CSS of the current token.
-* @param {number} lead - Offset length between the token value and its opening delimiter, which is zero if there is none.
-* @param {number} tail - Offset length between the token value and its closing delimiter, which is zero if there is none.
+* @param {number} type - Identifying type of the current token.
+* @param {number} line - Opening line of the current token.
+* @param {number} column - Opening column of the current token.
+* @param {number} open - Index of the opening of the current token.
+* @param {number} shut - Index of the closing of the current token.
+* @param {number} lead - Offset between the opening of the current token and its main value, which is zero if there is none.
+* @param {number} tail - Offset between the closing of the current token and its main value, which is zero if there is none.
 */
