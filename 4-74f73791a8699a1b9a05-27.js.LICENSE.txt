@@ -1,0 +1,27 @@
+/*!
+ * RegJSGen
+ * Copyright 2014 Benjamin Tan <https://d10.github.io/>
+ * Available under MIT license <http://d10.mit-license.org/>
+ */
+
+/*!
+ * The buffer module from node.js, for the browser.
+ *
+ * @author   Feross Aboukhadijeh <feross@feross.org> <http://feross.org>
+ * @license  MIT
+ */
+
+/*!
+ * The buffer module from node.js, for the browser.
+ *
+ * @author   Feross Aboukhadijeh <http://feross.org>
+ * @license  MIT
+ */
+
+/*! Based on https://mths.be/fromcodepoint v0.2.0 by @mathias */
+
+/*! https://mths.be/fromcodepoint v0.2.1 by @mathias */
+
+/*! https://mths.be/jsesc v1.3.0 by @mathias */
+
+/*! https://mths.be/regenerate v1.4.1 by @mathias | MIT license */
