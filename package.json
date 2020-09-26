@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json.schemastore.org/package",
+  "name": "@csstools/tokenizer",
+  "description": "Tokenize CSS according to the CSS Syntax",
+  "version": "0.0.0",
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "unpkg": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": "^10 || ^12 || ^14"
+  },
+  "scripts": {
+    "build": "node cmd/build.mjs",
+    "benchmark": "node cmd/benchmark.mjs",
+    "prepublishOnly": "node cmd/publish.mjs",
+    "test": "node cmd/test.mjs"
+  },
+  "license": "CC0-1.0",
+  "author": "Jonathan Neal <jonathantneal@hotmail.com>",
+  "bugs": "https://github.com/csstools/tokenizer/issues",
+  "homepage": "https://github.com/csstools/tokenizer",
+  "repository": "https://github.com/csstools/postcss-tape.git",
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@babel/preset-env": "^7.11.5",
+    "@babel/preset-typescript": "^7.10.4",
+    "@rollup/plugin-babel": "^5.2.1",
+    "@types/benchmark": "^1.0.33",
+    "@types/jest": "^26.0.14",
+    "@types/node": "^14.11.2",
+    "benchmark": "^2.1.4",
+    "bootstrap": "^4.5.2",
+    "codecov": "^3.7.2",
+    "jest": "^26.4.2",
+    "magic-string": "^0.25.7",
+    "postcss": "^8.0.9",
+    "rollup": "^2.28.2",
+    "rollup-plugin-bundle-size": "^1.0.3",
+    "rollup-plugin-terser": "^7.0.2",
+    "tailwindcss": "^1.8.10",
+    "tsc-watch": "^4.2.9",
+    "tslib": "^2.0.1",
+    "typescript": "^4.0.3"
+  }
+}
