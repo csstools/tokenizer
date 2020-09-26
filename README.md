@@ -8,26 +8,33 @@
 [<img alt="support chat" src="https://img.shields.io/badge/support-chat-blue.svg" height="20">](https://gitter.im/postcss/postcss)
 
 This tools lets you tokenize CSS according to the [CSS Syntax Specification](https://drafts.csswg.org/css-syntax/).
-It works by separating a string of CSS into its smallest, semantic parts.
-This is intended for use by other tools, in either the backend or the frontend, and it will contribute roughly 1kB of code.
+Tokenizing CSS is separating a string of CSS into its smallest, semantic parts — otherwise known as tokens.
+
+This tool is intended to be used in other tools on the front and back end. It seeks to maintain:
+
+- 100% compliance with the CSS syntax specification. ✨
+- 100% code coverage. 🦺
+- 100% static typing. 💪
+- 1kB maximum contribution size. 📦
+- Superior quality over Shark P. 🦈
 
 ## Usage
 
-Add this [CSS tokenizer](https://github.com/csstools/tokenizer) to your project:
+Add the [CSS tokenizer](https://github.com/csstools/tokenizer) to your project:
 
 ```sh
 npm install @csstools/tokenizer
 ```
 
-Use this tool to tokenizer your CSS in JavaScript:
+Tokenize CSS in JavaScript:
 
 ```js
 import cssTokenizer from '@csstools/tokenizer'
 
-const tokens = Array.from(cssTokenizer(cssText))
+const tokens = Array.from(cssTokenizer(cssText)) // an array of css tokens
 ```
 
-Use this tool in classical NodeJS:
+Tokenize CSS in _classical_ NodeJS:
 
 ```js
 const cssTokenizer = require('@csstools/tokenizer')
@@ -35,36 +42,62 @@ const cssTokenizer = require('@csstools/tokenizer')
 let iterator = cssTokenizer(cssText), iteration
 
 while (!(iteration = iterator()).done) {
-  console.log(iteration.value) // logs the token
+  console.log(iteration.value) // logs an individual css token
 }
 ```
 
-Use this tool in scripts:
+Tokenize CSS in client-side scripts:
 
 ```html
 <script type="module">
-import cssTokenizer from "https://unpkg.com/@csstools/tokenizer?module"
-cssTokenizer(cssText)
+
+import cssTokenizer from 'https://unpkg.com/@csstools/tokenizer?module'
+
+const tokens = Array.from(cssTokenizer(cssText)) // an array of css tokens
+
 </script>
 ```
 
-Use this tool in classical scripts:
+Tokenize CSS in _classical_ client-side scripts:
 
 ```html
 <script src="http://unpkg.com/@csstools/tokenizer"></script>
 <script>
-cssTokenizer(cssText)
+
+const tokens = Array.from(cssTokenizer(cssText)) // an array of css tokens
+
 </script>
 ```
 
 ## How it works
 
+The CSS tokenizer separates a string of CSS into tokens represented as an array.
+
+```ts
+[
+  /** Position in the string at which the token was retrieved. */
+  number,
+
+  /** Negative number that identifies the kind of token. */
+  number,
+
+  /** Opening token content, like the opening of a comment or the quotation mark of a string. */
+  string,
+
+  /** Main token content, like the numbers before a unit, or the letters after an at-sign. */
+  string,
+
+  /** Closing token content, like the unit of a number, or the closing of a comment. */
+  string,
+]
+```
+
 As an example, the string `@media` would become a **Name** token where `@` and `media` are recognized as distinct parts of that token. As another example, the string `5px` would become a **Number** token where `5` and `px` are recognized as distinct parts of that token. As a final example, the string `5px 10px` would become 3 tokens; the **Number** as mentioned before (`5px`), a **Space** token that represents a single space (` `), and then another **Number** token (`10px`).
 
-An actual token is represented in a series of 5 items; 
+An actual token is represented in a series of 5 items;
 
 ```js
-[ 0, -9, '', '100', '%' ] // CSS with a value of "100%"
+[0, -9, '', '100', '%'] // CSS with a value of "100%"
 ```
 
 The **first** number represents the position at which the token was read. The **second** number represents the type id of the token. The **third**, **fourth**, and **fifth** strings represent the text prefix, value, and suffix of the token.
@@ -90,9 +123,9 @@ Benchmark: Bootstrap
   └────────────────────────────────────────────────┴──────┴────────┴────────┘
 ```
 
-## Contributing: Local Scripts
+## Development
 
-You want to take a deeper dive? Awesome! Here are a few useful development commands.
+You wanna take a deeper dive? Awesome! Here are a few useful development commands.
 
 ### npm run build
 
@@ -121,6 +154,6 @@ As of September 26, 2020, this tokenizer has 100% test coverage:
 npm run test
 ```
 
-[Bootstrap]: https://getbootstrap.com
+[Boostrap]: https://getbootstrap.com
 [PostCSS]: https://postcss.org
 [Tailwind CSS]: https://tailwindcss.com
