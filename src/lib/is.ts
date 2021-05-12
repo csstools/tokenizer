@@ -1,4 +1,4 @@
-import * as cp from './code-points'
+import * as cp from './code-points.js'
 
 /** Returns whether the unicode value is a digit. [↗](https://drafts.csswg.org/css-syntax/#digit) */
 export const digit = (code: number) => code >= cp.DIGIT_ZERO && code <= cp.DIGIT_NINE

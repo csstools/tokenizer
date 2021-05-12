@@ -1,5 +1,5 @@
 import * as fs from 'fs'
-import tokenizer from './index'
+import { tokenizer } from './index.js'
 
 describe('Tokenization', () => {
 	test('Tokenizing an empty value', () => {

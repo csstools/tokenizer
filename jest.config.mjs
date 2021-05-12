@@ -11,6 +11,12 @@ export default /** @type {import('@jest/types').Config.InitialOptions} */ ({
 		'js',
 		'ts'
 	],
+	moduleNameMapper: {
+		"^\\./(.*)\\.js$": [
+			"./$1.js",
+			"./$1.ts"
+		]
+	},
 	roots: [
 		'<rootDir>/src'
 	],

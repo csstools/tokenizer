@@ -16,7 +16,7 @@ export const spawnNode     = (cmd, args, opts) => spawn('node', [path.resolve(cm
 export const spawnTsc      = (args, opts) => spawnNode('node_modules/typescript/lib/tsc.js', args, opts)
 export const spawnTscWatch = (args, opts) => spawnNode('node_modules/tsc-watch/lib/tsc-watch.js', args, opts)
 
-export const rmdir = (...paths) => fs.rmdirSync(resolve(...paths), { recursive: true })
+export const rmdir = (...paths) => (fs.rmSync || fs.rmdirSync)(resolve(...paths), { force: true, recursive: true })
 
 export const question = query => new Promise(resolve => {
 	const rl = readline.createInterface(question.options)

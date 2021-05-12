@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import Benchmark from 'benchmark'
-import tokenizerPostCSS from 'postcss/lib/tokenize'
-import tokenizerDevelop from './index'
+import tokenizerPostCSS from 'postcss/lib/tokenize.js'
+import tokenizerDevelop from './index.js'
 
 const counter = { value: 0 }
 

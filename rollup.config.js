@@ -24,7 +24,7 @@ const terserOptions = {
 const resolveJsTsExtension = {
 	name: 'resolve-js-ts-extension',
 	resolveId(/** @type {string} */ importee, /** @type {string} */ importer) {
-		if (importer?.endsWith('.ts') && importee) return path.join(path.dirname(importer), importee + '.ts')
+		if (importer?.endsWith('.ts') && importee) return path.join(path.dirname(importer), importee).replace(/(\.js)?$/, '.ts')
 		return null
 	}
 }
@@ -45,7 +45,8 @@ const config = /** @type {import('rollup').NormalizedInputOptions[]} */ ([
 	{
 		input: './src/index.ts',
 		output: {
-			exports: 'default',
+			esModule: false,
+			exports: 'named',
 			file: './dist/index.mjs',
 			format: 'esm',
 			strict: true,
@@ -60,7 +61,8 @@ const config = /** @type {import('rollup').NormalizedInputOptions[]} */ ([
 	{
 		input: './src/index.ts',
 		output: {
-			exports: 'default',
+			esModule: false,
+			exports: 'named',
 			file: './dist/index.cjs',
 			format: 'cjs',
 			strict: true,
@@ -73,8 +75,9 @@ const config = /** @type {import('rollup').NormalizedInputOptions[]} */ ([
 		],
 	},
 	{
-		input: './src/index.ts',
+		input: './src/index.iife.ts',
 		output: {
+			esModule: false,
 			exports: 'default',
 			file: './dist/index.js',
 			format: 'iife',

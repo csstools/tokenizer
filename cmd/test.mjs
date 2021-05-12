@@ -8,6 +8,7 @@ console.log(`Starting testing...`)
 console.log()
 
 _.rmdir('coverage')
+
 _.spawnNode(jestBin, [
 	'--colors',
 	'--passWithNoTests',

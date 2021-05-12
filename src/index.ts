@@ -1,9 +1,10 @@
-import consume from './lib/consume'
+import { consume } from './lib/consume.js'
 
 /** Returns a CSS iterator to yield tokens from the given CSS data. */
-const cssTokenizer = (/** CSS data. */ data: string) => {
+export const tokenizer = (/** CSS data. */ data: string) => {
 	let size = data.length
 	let tick = 0
+
 	/** Condition of the current tokenizer. */
 	let state: CSSState = {
 		data,
@@ -14,7 +15,7 @@ const cssTokenizer = (/** CSS data. */ data: string) => {
 		codeAt2: tick + 2 < size ? data.charCodeAt(tick + 2) : -1,
 		codeAt3: tick + 3 < size ? data.charCodeAt(tick + 3) : -1,
 		/** Advances the unicode characters being read from the CSS data by one position. */
-		advance() {
+		next() {
 			state.tick = ++tick
 			state.codeAt0 = state.codeAt1
 			state.codeAt1 = state.codeAt2
@@ -42,5 +43,4 @@ const cssTokenizer = (/** CSS data. */ data: string) => {
 	return iterator
 }
 
-export default cssTokenizer
 /* istanbul ignore next */

@@ -1,11 +1,11 @@
-import * as cp from './code-points'
-import * as is from './is'
-import * as tt from './token-types'
+import * as cp from './code-points.js'
+import * as is from './is.js'
+import * as tt from './token-types.js'
 
 const { fromCharCode } = String
 
 /** Consumes and returns a token. [↗](https://drafts.csswg.org/css-syntax/#consume-token) */
-export default (
+export const consume = (
 	/** Condition of the current tokenizer. */
 	state: CSSState
 ) => {
@@ -48,40 +48,40 @@ export default (
 		/* <ident-token> */
 		/* https://drafts.csswg.org/css-syntax/#ident-token-diagram */
 		case state.codeAt0 === cp.REVERSE_SOLIDUS:
-			if (is.validEscape(state.codeAt0, state.codeAt1)) return [
+			if (is.validEscape(state.codeAt0, state.codeAt1)) return consumeIdentifierLikeToken(state, [
 				state.tick,
 				tt.IDENT,
 				'',
 				consumeAnyValue(state) + consumeAnyValue(state) + consumeAnyValue(state) + consumeIdentifierValue(state),
 				'',
-			] as CSSValue
+			])
 			break
 		case is.identifierStart(state.codeAt0):
 			// W
-			return [
+			return consumeIdentifierLikeToken(state, [
 				state.tick,
 				tt.IDENT,
 				'',
 				consumeAnyValue(state) + consumeIdentifierValue(state),
 				''
-			] as CSSValue
+			])
 		case state.codeAt0 === cp.HYPHEN_MINUS:
 			// -W
-			if (state.codeAt1 === cp.HYPHEN_MINUS || is.identifierStart(state.codeAt1)) return [
+			if (state.codeAt1 === cp.HYPHEN_MINUS || is.identifierStart(state.codeAt1)) return consumeIdentifierLikeToken(state, [
 				state.tick,
 				tt.IDENT,
 				'',
 				consumeAnyValue(state) + consumeAnyValue(state) + consumeIdentifierValue(state),
 				'',
-			] as CSSValue
+			])
 			// -\:
-			if (is.validEscape(state.codeAt1, state.codeAt2)) return [
+			if (is.validEscape(state.codeAt1, state.codeAt2)) return consumeIdentifierLikeToken(state, [
 				state.tick,
 				tt.IDENT,
 				'',
 				consumeAnyValue(state) + consumeAnyValue(state) + consumeAnyValue(state) + consumeIdentifierValue(state),
 				'',
-			] as CSSValue
+			])
 		/* <number-token> */
 		/* https://drafts.csswg.org/css-syntax/#number-token-diagram */
 			// -8
@@ -198,7 +198,7 @@ export default (
 /** Consume and return a value. [↗](https://drafts.csswg.org/css-syntax/#consume-token) */
 const consumeAnyValue = (state: CSSState) => {
 	const result = fromCharCode(state.codeAt0)
-	state.advance()
+	state.next()
 	return result
 }
 
@@ -209,10 +209,10 @@ const consumeIdentifierValue = (state: CSSState) => {
 		switch (true) {
 			case is.validEscape(state.codeAt0, state.codeAt1):
 				result += fromCharCode(state.codeAt0)
-				state.advance()
+				state.next()
 			case is.identifier(state.codeAt0):
 				result += fromCharCode(state.codeAt0)
-				state.advance()
+				state.next()
 				continue
 		}
 		break
@@ -220,17 +220,27 @@ const consumeIdentifierValue = (state: CSSState) => {
 	return result
 }
 
+/** Consume and return an identifier or function token. [↗](https://drafts.csswg.org/css-syntax/#consume-an-identifier) */
+const consumeIdentifierLikeToken = (state: CSSState, value: CSSValue) => {
+	if (state.codeAt0 === cp.LEFT_PARENTHESIS) {
+		value[1] = tt.FUNCTION
+		value[4] = '('
+		state.next()
+	}
+	return value
+}
+
 /** Consume and return a comment token. [↗](https://drafts.csswg.org/css-syntax/#consume-comment) */
 const consumeCommentToken = (state: CSSState) => {
 	const value: CSSValue = [ state.tick, tt.COMMENT, '/*', '', '' ]
-	state.advance()
-	state.advance()
+	state.next()
+	state.next()
 	while (state.tick < state.size) {
 		// @ts-ignore
 		if (state.codeAt0 === cp.ASTERISK && state.codeAt1 === cp.SOLIDUS) {
 			value[4] = '*/'
-			state.advance()
-			state.advance()
+			state.next()
+			state.next()
 			break
 		}
 		value[3] += consumeAnyValue(state)

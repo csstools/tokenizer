@@ -15,7 +15,7 @@ type CSSState = {
 	/** Unicode character for the 3 ahead position in the CSS data. */
 	codeAt3: number
 	/** Advances the unicode characters being read from the CSS data by one position. */
-	advance(): boolean
+	next(): boolean
 }
 
 /** The CSS iterator produces a sequence of CSS tokens in an iterator pattern. */

@@ -1,7 +1,7 @@
 # CSS Tokenizer
 
 [<img alt="npm version" src="https://img.shields.io/npm/v/@csstools/tokenizer.svg" height="20">](https://www.npmjs.com/package/@csstools/tokenizer)
-[<img alt="build status" src="https://img.shields.io/travis/csstools/tokenizer/master.svg" height="20">](https://travis-ci.org/github/csstools/tokenizer)
+[<img alt="build status" src="https://img.shields.io/travis/csstools/tokenizer/main.svg" height="20">](https://travis-ci.org/github/csstools/tokenizer)
 [<img alt="code coverage" src="https://img.shields.io/codecov/c/github/csstools/tokenizer" height="20">](https://codecov.io/gh/csstools/tokenizer)
 [<img alt="issue tracker" src="https://img.shields.io/github/issues/csstools/tokenizer.svg" height="20">](https://github.com/csstools/tokenizer/issues)
 [<img alt="pull requests" src="https://img.shields.io/github/issues-pr/csstools/tokenizer.svg" height="20">](https://github.com/csstools/tokenizer/pulls)
@@ -29,17 +29,17 @@ npm install @csstools/tokenizer
 Tokenize CSS in JavaScript:
 
 ```js
-import cssTokenizer from '@csstools/tokenizer'
+import { tokenizer } from '@csstools/tokenizer'
 
-const tokens = Array.from(cssTokenizer(cssText)) // an array of css tokens
+const tokens = Array.from(tokenizer(cssText)) // an array of css tokens
 ```
 
 Tokenize CSS in _classical_ NodeJS:
 
 ```js
-const cssTokenizer = require('@csstools/tokenizer')
+const { tokenizer } = require('@csstools/tokenizer')
 
-let iterator = cssTokenizer(cssText), iteration
+let iterator = tokenizer(cssText), iteration
 
 while (!(iteration = iterator()).done) {
   console.log(iteration.value) // logs an individual css token
@@ -51,9 +51,9 @@ Tokenize CSS in client-side scripts:
 ```html
 <script type="module">
 
-import cssTokenizer from 'https://unpkg.com/@csstools/tokenizer?module'
+import { tokenizer } from 'https://unpkg.com/@csstools/tokenizer?module'
 
-const tokens = Array.from(cssTokenizer(cssText)) // an array of css tokens
+const tokens = Array.from(tokenizer(cssText)) // an array of css tokens
 
 </script>
 ```
@@ -78,16 +78,25 @@ The CSS tokenizer separates a string of CSS into tokens represented as an array.
   /** Position in the string at which the token was retrieved. */
   number,
 
-  /** Negative number that identifies the kind of token. */
-  number,
+  /** Number identifying the kind of token. */
+  | -2 // Comment
+  | -3 // Space
+  | -4 // Identifier
+  | -5 // Function
+  | -6 // At-Identifier
+  | -7 // Hash
+  | -8 // String
+  | -9 // Numeric
+  | number // Delimiter (character code)
+  ,
 
-  /** Opening token content, like the opening of a comment or the quotation mark of a string. */
+  /** Lead content, like the opening of a comment or the quotation mark of a string. */
   string,
 
-  /** Main token content, like the numbers before a unit, or the letters after an at-sign. */
+  /** Main content, like the numbers before a unit, or the letters after an at-sign. */
   string,
 
-  /** Closing token content, like the unit of a number, or the closing of a comment. */
+  /** Tail content, like the unit of a number, or the closing of a comment. */
   string,
 ]
 ```
@@ -104,22 +113,23 @@ The **first** number represents the position at which the token was read. The **
 
 ## Benchmarks
 
-As of September 26, 2020, these benchmarks were averaged from my local machine:
+As of May 11, 2021, these benchmarks were averaged from my local machine:
 
 ```
 Benchmark: Tailwind CSS
   ┌──────────────────────────────────────────────────┬───────┬────────┬────────┐
   │                     (index)                      │  ms   │ ms/50k │ tokens │
   ├──────────────────────────────────────────────────┼───────┼────────┼────────┤
-  │ PostCSS x 12.38 ops/sec ±3.33% (35 runs sampled) │ 80.79 │  6.97  │ 579896 │
-  │ Develop x 12.07 ops/sec ±1.54% (34 runs sampled) │ 82.86 │  6.17  │ 670972 │
+  │ PostCSS x 11.86 ops/sec ±2.64% (35 runs sampled) │ 84.31 │  4.52  │ 933299 │
+  │ Develop x 14.98 ops/sec ±1.04% (42 runs sampled) │ 66.75 │  3.53  │ 946324 │
   └──────────────────────────────────────────────────┴───────┴────────┴────────┘
+
 Benchmark: Bootstrap
   ┌────────────────────────────────────────────────┬──────┬────────┬────────┐
   │                    (index)                     │  ms  │ ms/50k │ tokens │
   ├────────────────────────────────────────────────┼──────┼────────┼────────┤
-  │ PostCSS x 230 ops/sec ±0.50% (89 runs sampled) │ 4.35 │  4.37  │ 49807  │
-  │ Develop x 142 ops/sec ±0.76% (80 runs sampled) │ 7.04 │  5.92  │ 59502  │
+  │ PostCSS x 369 ops/sec ±0.12% (95 runs sampled) │ 2.71 │  2.77  │ 49006  │
+  │ Develop x 272 ops/sec ±0.10% (93 runs sampled) │ 3.68 │  3.22  │ 57141  │
   └────────────────────────────────────────────────┴──────┴────────┴────────┘
 ```
 
