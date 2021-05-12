@@ -261,7 +261,7 @@ const consumeSpaceToken = (state: CSSState) => {
 /** Consumes and returns a string token. [↗](https://drafts.csswg.org/css-syntax/#string-token-diagram) */
 const consumeStringToken = (state: CSSState) => {
 	const { codeAt0 } = state
-	const value: CSSValue = [ state.tick, tt.STRING, '', consumeAnyValue(state), '' ]
+	const value: CSSValue = [ state.tick, tt.STRING, consumeAnyValue(state), '', '' ]
 	while (state.tick < state.size) {
 		switch (true) {
 			case is.validEscape(state.codeAt0, state.codeAt1):
