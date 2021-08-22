@@ -85,6 +85,11 @@ describe('Tokenization', () => {
 		expect(tokens).toHaveLength(1)
 
 		tokens = [
+			...Array.from(tokenizer(`.25rem`)),
+		]
+		expect(tokens).toHaveLength(1)
+
+		tokens = [
 			...Array.from(tokenizer(`1_`)),
 			...Array.from(tokenizer(`1™`)),
 			...Array.from(tokenizer(`1A`)),

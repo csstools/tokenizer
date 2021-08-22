@@ -288,6 +288,7 @@ export const consumeNumberSansAdditiveValue = (state: CSSState) => {
 /** Consumes and returns a number value after a decimal place. [↗](https://drafts.csswg.org/css-syntax/#consume-a-number) */
 const consumeNumberSansDecimalValue = (state: CSSState) => {
 	let result = ''
+	result += consumeDigitValue(state)
 	if (state.codeAt0 === cp.LATIN_CAPITAL_LETTER_E || state.codeAt0 === cp.LATIN_SMALL_LETTER_E) {
 		switch (true) {
 			case (state.codeAt1 === cp.PLUS_SIGN || state.codeAt1 === cp.HYPHEN_MINUS):
