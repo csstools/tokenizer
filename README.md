@@ -116,23 +116,24 @@ As an example, the CSS string `@media` would become a **Atword** token where `@`
 
 ## Benchmarks
 
-As of August 22, 2021, these benchmarks were averaged from my local machine:
+As of August 23, 2021, these benchmarks were averaged from my local machine:
 
-```
-Benchmark: Tailwind CSS
-  ┌────────────────────────────────────────────────────┬───────┬────────┬────────┐
-  │                      (index)                       │  ms   │ ms/50k │ tokens │
-  ├────────────────────────────────────────────────────┼───────┼────────┼────────┤
-  │ PostCSS 8 x 13.79 ops/sec ±2.86% (39 runs sampled) │ 72.54 │  3.88  │ 935267 │
-  │ Tokenizer x 17.07 ops/sec ±1.19% (47 runs sampled) │ 58.57 │  3.09  │ 948045 │
-  └────────────────────────────────────────────────────┴───────┴────────┴────────┘
+```Benchmark: Tailwind CSS
+  ┌────────────────────────────────────────────────────┬────────┬────────┬────────┐
+  │                      (index)                       │   ms   │ ms/50k │ tokens │
+  ├────────────────────────────────────────────────────┼────────┼────────┼────────┤
+  │ CSSTree 1 x 7.55 ops/sec ±11.49% (24 runs sampled) │ 132.48 │ 13.87  │ 477434 │
+  │ PostCSS 8 x 13.78 ops/sec ±2.73% (39 runs sampled) │ 72.56  │  3.88  │ 935267 │
+  │ Tokenizer x 17.09 ops/sec ±1.09% (47 runs sampled) │ 58.52  │  3.09  │ 948045 │
+  └────────────────────────────────────────────────────┴────────┴────────┴────────┘
 
 Benchmark: Bootstrap
   ┌──────────────────────────────────────────────────┬──────┬────────┬────────┐
   │                     (index)                      │  ms  │ ms/50k │ tokens │
   ├──────────────────────────────────────────────────┼──────┼────────┼────────┤
-  │ PostCSS 8 x 418 ops/sec ±0.13% (93 runs sampled) │ 2.39 │  2.34  │ 51170  │
-  │ Tokenizer x 282 ops/sec ±1.24% (91 runs sampled) │ 3.55 │  2.98  │ 59566  │
+  │ CSSTree 1 x 118 ops/sec ±2.39% (77 runs sampled) │ 8.5  │  13.1  │ 32425  │
+  │ PostCSS 8 x 408 ops/sec ±0.10% (96 runs sampled) │ 2.45 │  2.4   │ 51170  │
+  │ Tokenizer x 288 ops/sec ±0.14% (93 runs sampled) │ 3.48 │  2.92  │ 59566  │
   └──────────────────────────────────────────────────┴──────┴────────┴────────┘
 ```
 

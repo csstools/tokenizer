@@ -1,7 +1,9 @@
 import * as fs from 'fs'
 import Benchmark from 'benchmark'
-import tokenizerPostCSS from 'postcss/lib/tokenize'
-import { tokenize as tokenizerDevelop } from './tokenize.js'
+import csstree from 'css-tree'
+import postcss from 'postcss/lib/tokenize'
+
+import { tokenize } from './tokenize.js'
 
 const counter = { value: 0 }
 
@@ -14,7 +16,7 @@ export declare type Suite = Omit<Benchmark.Suite, 'filter'> & {
 
 const createCasePostCSS = (css: string) => () => {
 	let count = 0
-	const tokenizer = tokenizerPostCSS({ css })
+	const tokenizer = postcss({ css })
 	while (!tokenizer.endOfFile()) {
 		tokenizer.nextToken({})
 		++count
@@ -22,18 +24,29 @@ const createCasePostCSS = (css: string) => () => {
 	counter.value = count
 }
 
-const createCaseDevelop = (css: string) => () => {
+const createCaseTokenizer = (css: string) => () => {
 	let count = 1
-	let tokenizer = tokenizerDevelop(css)
+	let tokenizer = tokenize(css)
 	while (!tokenizer().done) ++count
+	counter.value = count
+}
+
+const createCaseCssTree = (css: string) => () => {
+	let count = 0
+	let ast = csstree.parse(css)
+	csstree.walk(ast, () => {
+		++count
+	})
 	counter.value = count
 }
 
 const initializeBenchmark = (suite: Suite, css: string) => {
 	counter.value = 0
 
+	suite.add('CSSTree 1', createCaseCssTree(css))
 	suite.add('PostCSS 8', createCasePostCSS(css))
-	suite.add('Tokenizer', createCaseDevelop(css))
+	suite.add('Tokenizer', createCaseTokenizer(css))
+
 	suite.on('cycle', (evt: { target: { tokensCount: number }}) => evt.target.tokensCount = counter.value)
 	suite.on('complete', () => {
 		const result: { [key: string]: { ms: number, 'ms/50k': number, tokens: number } } = {}
