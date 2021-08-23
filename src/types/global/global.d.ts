@@ -1,5 +1,5 @@
 /** The CSS state represents the condition of the tokenizer at any given moment. */
-type CSSState = {
+export type CSSState = {
 	/** CSS data. */
 	data: string
 	/** Number of characters in the CSS data. */
@@ -19,7 +19,7 @@ type CSSState = {
 }
 
 /** The CSS iterator produces a sequence of CSS tokens in an iterator pattern. */
-type CSSIterator = {
+export type CSSIterator = {
 	(): CSSIteration
 	[Symbol.iterator](): {
 		next: CSSIterator
@@ -27,9 +27,20 @@ type CSSIterator = {
 }
 
 /** The CSS iteration represents the most recent state and token yielded from the CSS iterator. */
-type CSSIteration = {
+export type CSSIteration = {
 	done: boolean
-	value: CSSValue
+	value: CSSToken
 }
 
-type CSSValue = [number, number, string, string, string]
+export type CSSToken = {
+	tick: number
+	type: number
+	code: number
+	lead: string
+	data: string
+	tail: string
+}
+
+export type CSSTokenize = (data: string) => CSSIterator
+
+export declare const tokenize: CSSTokenize

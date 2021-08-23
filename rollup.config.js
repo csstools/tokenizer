@@ -43,11 +43,11 @@ const reduceImpact = {
 
 const config = /** @type {import('rollup').NormalizedInputOptions[]} */ ([
 	{
-		input: './src/index.ts',
+		input: './src/tokenize.ts',
 		output: {
 			esModule: false,
 			exports: 'named',
-			file: './dist/index.mjs',
+			file: './dist/tokenize.mjs',
 			format: 'esm',
 			strict: true,
 			sourcemap: true,
@@ -59,11 +59,11 @@ const config = /** @type {import('rollup').NormalizedInputOptions[]} */ ([
 		],
 	},
 	{
-		input: './src/index.ts',
+		input: './src/tokenize.ts',
 		output: {
 			esModule: false,
 			exports: 'named',
-			file: './dist/index.cjs',
+			file: './dist/tokenize.cjs',
 			format: 'cjs',
 			strict: true,
 			sourcemap: true,
@@ -75,13 +75,13 @@ const config = /** @type {import('rollup').NormalizedInputOptions[]} */ ([
 		],
 	},
 	{
-		input: './src/index.iife.ts',
+		input: './src/tokenize.iife.ts',
 		output: {
 			esModule: false,
 			exports: 'default',
-			file: './dist/index.js',
+			file: './dist/tokenize.js',
 			format: 'iife',
-			name: 'cssTokenizer',
+			name: 'tokenizeCSS',
 			strict: false,
 			sourcemap: false,
 		},
@@ -92,7 +92,7 @@ const config = /** @type {import('rollup').NormalizedInputOptions[]} */ ([
 			reduceImpact,
 			bundleSize(),
 		]
-	}
+	},
 ])
 
 export default config

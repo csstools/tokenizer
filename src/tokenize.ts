@@ -1,7 +1,8 @@
+import { CSSState, CSSIterator, CSSIteration } from './types/global/global.js'
 import { consume } from './lib/consume.js'
 
 /** Returns a CSS iterator to yield tokens from the given CSS data. */
-export const tokenizer = (/** CSS data. */ data: string) => {
+export const tokenize = (/** CSS data. */ data: string) => {
 	let size = data.length
 	let tick = 0
 
@@ -26,21 +27,19 @@ export const tokenizer = (/** CSS data. */ data: string) => {
 	}
 
 	/** Returns the most recent state and token yielded from the CSS iterator. */
-	const iterator: CSSIterator = (): CSSIteration => (
+	const iterator: CSSIterator = ((): CSSIteration => (
 		state.tick >= state.size
 			? {
 				done: true,
-				value: [ state.tick, -1, '', '', '' ]
+				value: { tick: state.tick, type: 0, code: -2, lead: '', data: '', tail: '' }
 			}
 		: {
 			done: false,
 			value: consume(state),
 		}
-	)
+	)) as CSSIterator
 
 	iterator[Symbol.iterator] = () => ({ next: iterator })
 
 	return iterator
 }
-
-/* istanbul ignore next */

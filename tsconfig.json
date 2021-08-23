@@ -5,6 +5,7 @@
     "allowSyntheticDefaultImports": true,
     "alwaysStrict": true,
     "declaration": true,
+    "emitDeclarationOnly": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "incremental": true,
@@ -22,7 +23,7 @@
     "noImplicitThis": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "outDir": "dist",
+    "outFile": "dist/tokenize.d.ts",
     "skipLibCheck": false,
     "sourceMap": true,
     "strict": true,
@@ -37,9 +38,7 @@
       "node"
     ]
   },
-  "include": [
-    "src/**/*",
-    "node_modules/postcss/**/*",
-    "tsconfig.json.build.json"
+  "files": [
+    "src/tokenize.ts"
   ]
 }

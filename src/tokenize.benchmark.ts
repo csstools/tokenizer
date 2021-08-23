@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import Benchmark from 'benchmark'
-import tokenizerPostCSS from 'postcss/lib/tokenize.js'
-import tokenizerDevelop from './index.js'
+import tokenizerPostCSS from 'postcss/lib/tokenize'
+import { tokenize as tokenizerDevelop } from './tokenize.js'
 
 const counter = { value: 0 }
 
@@ -16,7 +16,7 @@ const createCasePostCSS = (css: string) => () => {
 	let count = 0
 	const tokenizer = tokenizerPostCSS({ css })
 	while (!tokenizer.endOfFile()) {
-		tokenizer.nextToken()
+		tokenizer.nextToken({})
 		++count
 	}
 	counter.value = count
@@ -32,8 +32,8 @@ const createCaseDevelop = (css: string) => () => {
 const initializeBenchmark = (suite: Suite, css: string) => {
 	counter.value = 0
 
-	suite.add('PostCSS', createCasePostCSS(css))
-	suite.add('Develop', createCaseDevelop(css))
+	suite.add('PostCSS 8', createCasePostCSS(css))
+	suite.add('Tokenizer', createCaseDevelop(css))
 	suite.on('cycle', (evt: { target: { tokensCount: number }}) => evt.target.tokensCount = counter.value)
 	suite.on('complete', () => {
 		const result: { [key: string]: { ms: number, 'ms/50k': number, tokens: number } } = {}

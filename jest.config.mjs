@@ -3,7 +3,7 @@
 export default /** @type {import('@jest/types').Config.InitialOptions} */ ({
 	collectCoverage: true,
 	collectCoverageFrom: [
-		'src/index.ts',
+		'src/tokenize.ts',
 		'src/lib/*.ts'
 	],
 	coverageDirectory: 'coverage',

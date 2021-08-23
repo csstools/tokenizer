@@ -29,9 +29,17 @@ npm install @csstools/tokenizer
 Tokenize CSS in JavaScript:
 
 ```js
-import { tokenizer } from '@csstools/tokenizer'
+import { tokenize } from '@csstools/tokenizer'
 
-const tokens = Array.from(tokenizer(cssText)) // an array of css tokens
+const tokens = Array.from(tokenize(cssText)) // an array of css tokens
+```
+
+```js
+import { tokenize } from '@csstools/tokenizer'
+
+for (const token of tokenize(cssText)) {
+  console.log(token) // logs an individual css token
+}
 ```
 
 Tokenize CSS in _classical_ NodeJS:
@@ -51,9 +59,9 @@ Tokenize CSS in client-side scripts:
 ```html
 <script type="module">
 
-import { tokenizer } from 'https://unpkg.com/@csstools/tokenizer?module'
+import { tokenize } from 'https://unpkg.com/@csstools/tokenizer?module'
 
-const tokens = Array.from(tokenizer(cssText)) // an array of css tokens
+const tokens = Array.from(tokenize(cssText)) // an array of css tokens
 
 </script>
 ```
@@ -64,73 +72,68 @@ Tokenize CSS in _classical_ client-side scripts:
 <script src="http://unpkg.com/@csstools/tokenizer"></script>
 <script>
 
-const tokens = Array.from(cssTokenizer(cssText)) // an array of css tokens
+const tokens = Array.from(tokenizeCSS(cssText)) // an array of css tokens
 
 </script>
 ```
 
 ## How it works
 
-The CSS tokenizer separates a string of CSS into tokens represented as an array.
+The CSS tokenizer separates a string of CSS into tokens.
 
 ```ts
-[
+interface CSSToken {
   /** Position in the string at which the token was retrieved. */
-  number,
+  tick: number
 
   /** Number identifying the kind of token. */
-  | -2 // Comment
-  | -3 // Space
-  | -4 // Identifier
-  | -5 // Function
-  | -6 // At-Identifier
-  | -7 // Hash
-  | -8 // String
-  | -9 // Numeric
-  | number // Delimiter (character code)
-  ,
+  type:
+    | 1 // Symbol
+    | 2 // Comment
+    | 3 // Space
+    | 4 // Word
+    | 5 // Action
+    | 6 // Atword
+    | 7 // Hash
+    | 8 // String
+    | 9 // Number
+  
+  /** Character code (when a Symbol, otherwise -1) */
+  code: number
 
-  /** Lead content, like the opening of a comment or the quotation mark of a string. */
-  string,
+  /** Lead, like the opening of a comment or the quotation mark of a string. */
+  lead: string,
 
-  /** Main content, like the numbers before a unit, or the letters after an at-sign. */
-  string,
+  /** Data, like the numbers before a unit, or the letters after an at-sign. */
+  data: string,
 
-  /** Tail content, like the unit of a number, or the closing of a comment. */
-  string,
+  /** Tail, like the unit of a number, or the closing of a comment. */
+  tail: string,
 ]
 ```
 
-As an example, the string `@media` would become a **Name** token where `@` and `media` are recognized as distinct parts of that token. As another example, the string `5px` would become a **Number** token where `5` and `px` are recognized as distinct parts of that token. As a final example, the string `5px 10px` would become 3 tokens; the **Number** as mentioned before (`5px`), a **Space** token that represents a single space (` `), and then another **Number** token (`10px`).
-
-An actual token is represented in a series of 5 items;
-
-```js
-[0, -9, '', '100', '%'] // CSS with a value of "100%"
-```
-
-The **first** number represents the position at which the token was read. The **second** number represents the type id of the token. The **third**, **fourth**, and **fifth** strings represent the text prefix, value, and suffix of the token.
+As an example, the CSS string `@media` would become a **Atword** token where `@` and `media` are recognized as distinct parts of that token. As another example, the CSS string `5px` would become a **Number** token where `5` and `px` are recognized as distinct parts of that token. As a final example, the string `5px 10px` would become 3 tokens; the **Number** as mentioned before (`5px`), a **Space** token that represents a single space (` `), and then another **Number** token (`10px`).
 
 ## Benchmarks
 
-As of May 11, 2021, these benchmarks were averaged from my local machine:
+As of August 22, 2021, these benchmarks were averaged from my local machine:
 
 ```
 Benchmark: Tailwind CSS
-  ┌──────────────────────────────────────────────────┬───────┬────────┬────────┐
-  │                     (index)                      │  ms   │ ms/50k │ tokens │
-  ├──────────────────────────────────────────────────┼───────┼────────┼────────┤
-  │ PostCSS x 11.86 ops/sec ±2.64% (35 runs sampled) │ 84.31 │  4.52  │ 933299 │
-  │ Develop x 14.98 ops/sec ±1.04% (42 runs sampled) │ 66.75 │  3.53  │ 946324 │
-  └──────────────────────────────────────────────────┴───────┴────────┴────────┘
+  ┌────────────────────────────────────────────────────┬───────┬────────┬────────┐
+  │                      (index)                       │  ms   │ ms/50k │ tokens │
+  ├────────────────────────────────────────────────────┼───────┼────────┼────────┤
+  │ PostCSS 8 x 13.79 ops/sec ±2.86% (39 runs sampled) │ 72.54 │  3.88  │ 935267 │
+  │ Tokenizer x 17.07 ops/sec ±1.19% (47 runs sampled) │ 58.57 │  3.09  │ 948045 │
+  └────────────────────────────────────────────────────┴───────┴────────┴────────┘
 
 Benchmark: Bootstrap
-  ┌────────────────────────────────────────────────┬──────┬────────┬────────┐
-  │                    (index)                     │  ms  │ ms/50k │ tokens │
-  ├────────────────────────────────────────────────┼──────┼────────┼────────┤
-  │ PostCSS x 369 ops/sec ±0.12% (95 runs sampled) │ 2.71 │  2.77  │ 49006  │
-  │ Develop x 272 ops/sec ±0.10% (93 runs sampled) │ 3.68 │  3.22  │ 57141  │
-  └────────────────────────────────────────────────┴──────┴────────┴────────┘
+  ┌──────────────────────────────────────────────────┬──────┬────────┬────────┐
+  │                     (index)                      │  ms  │ ms/50k │ tokens │
+  ├──────────────────────────────────────────────────┼──────┼────────┼────────┤
+  │ PostCSS 8 x 418 ops/sec ±0.13% (93 runs sampled) │ 2.39 │  2.34  │ 51170  │
+  │ Tokenizer x 282 ops/sec ±1.24% (91 runs sampled) │ 3.55 │  2.98  │ 59566  │
+  └──────────────────────────────────────────────────┴──────┴────────┴────────┘
 ```
 
 ## Development

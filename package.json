@@ -4,22 +4,27 @@
   "description": "Tokenize CSS according to the CSS Syntax",
   "version": "2.0.2",
   "type": "module",
-  "main": "dist/index.cjs",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
-  "unpkg": "dist/index.js",
+  "main": "dist/tokenize.cjs",
+  "module": "dist/tokenize.mjs",
+  "types": "dist/tokenize.d.ts",
+  "unpkg": "dist/tokenize.js",
   "exports": {
     ".": {
-      "require": "./dist/index.cjs",
-      "import": "./dist/index.mjs",
-      "types": "./dist/index.d.ts"
+      "require": "./dist/tokenize.cjs",
+      "import": "./dist/tokenize.mjs",
+      "types": "./dist/tokenize.d.ts"
+    },
+    "./tokenize": {
+      "require": "./dist/tokenize.cjs",
+      "import": "./dist/tokenize.mjs",
+      "types": "./dist/tokenize.d.ts"
     }
   },
   "files": [
     "dist"
   ],
   "engines": {
-    "node": ">= 10"
+    "node": ">= 12"
   },
   "scripts": {
     "build": "node cmd/build.mjs",

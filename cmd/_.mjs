@@ -16,6 +16,8 @@ export const spawnNode     = (cmd, args, opts) => spawn('node', [path.resolve(cm
 export const spawnTsc      = (args, opts) => spawnNode('node_modules/typescript/lib/tsc.js', args, opts)
 export const spawnTscWatch = (args, opts) => spawnNode('node_modules/tsc-watch/lib/tsc-watch.js', args, opts)
 
+export const copyFile = (src, dest) => fs.copyFileSync(resolve(src), resolve(dest))
+export const mkdir = (...paths) => fs.mkdirSync(resolve(...paths))
 export const rmdir = (...paths) => (fs.rmSync || fs.rmdirSync)(resolve(...paths), { force: true, recursive: true })
 
 export const question = query => new Promise(resolve => {
