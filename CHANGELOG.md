@@ -1,5 +1,11 @@
 # Changes to CSS Tokenizer
 
+### 3.0.0 (August 23, 2021)
+
+- Changes the shape of tokens from an array to an object.
+- Changes the named export from `tokenizer` to `tokenize`.
+- Changes the global IIFE export from `cssTokenizer` to `tokenizeCSS`.
+
 ### 2.0.2 (August 22, 2021)
 
 - Fixes an issue consuming digits after a number that begins with a decimal.
