@@ -31,14 +31,8 @@ Tokenize CSS in JavaScript:
 ```js
 import { tokenize } from '@csstools/tokenizer'
 
-const tokens = Array.from(tokenize(cssText)) // an array of css tokens
-```
-
-```js
-import { tokenize } from '@csstools/tokenizer'
-
 for (const token of tokenize(cssText)) {
-  console.log(token) // logs an individual css token
+  console.log(token) // logs an individual CSSToken
 }
 ```
 
@@ -50,7 +44,7 @@ const { tokenizer } = require('@csstools/tokenizer')
 let iterator = tokenizer(cssText), iteration
 
 while (!(iteration = iterator()).done) {
-  console.log(iteration.value) // logs an individual css token
+  console.log(iteration.value) // logs an individual CSSToken
 }
 ```
 
@@ -61,7 +55,9 @@ Tokenize CSS in client-side scripts:
 
 import { tokenize } from 'https://unpkg.com/@csstools/tokenizer?module'
 
-const tokens = Array.from(tokenize(cssText)) // an array of css tokens
+for (const token of tokenize(cssText)) {
+  console.log(token) // logs an individual CSSToken
+}
 
 </script>
 ```
@@ -72,7 +68,7 @@ Tokenize CSS in _classical_ client-side scripts:
 <script src="http://unpkg.com/@csstools/tokenizer"></script>
 <script>
 
-const tokens = Array.from(tokenizeCSS(cssText)) // an array of css tokens
+const tokens = Array.from(tokenizeCSS(cssText)) // an array of CSSTokens
 
 </script>
 ```
@@ -109,7 +105,7 @@ interface CSSToken {
 
   /** Tail, like the unit of a number, or the closing of a comment. */
   tail: string,
-]
+}
 ```
 
 As an example, the CSS string `@media` would become a **Atword** token where `@` and `media` are recognized as distinct parts of that token. As another example, the CSS string `5px` would become a **Number** token where `5` and `px` are recognized as distinct parts of that token. As a final example, the string `5px 10px` would become 3 tokens; the **Number** as mentioned before (`5px`), a **Space** token that represents a single space (` `), and then another **Number** token (`10px`).
