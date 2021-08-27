@@ -93,6 +93,57 @@ const config = /** @type {import('rollup').NormalizedInputOptions[]} */ ([
 			bundleSize(),
 		]
 	},
+	{
+		input: './src/tokenize.scss.ts',
+		output: {
+			esModule: false,
+			exports: 'named',
+			file: './dist/tokenizeSCSS.mjs',
+			format: 'esm',
+			strict: true,
+			sourcemap: true,
+		},
+		plugins: [
+			resolveJsTsExtension,
+			babel({ ...babelOptions }),
+			bundleSize()
+		],
+	},
+	{
+		input: './src/tokenize.scss.ts',
+		output: {
+			esModule: false,
+			exports: 'named',
+			file: './dist/tokenizeSCSS.cjs',
+			format: 'cjs',
+			strict: true,
+			sourcemap: true,
+		},
+		plugins: [
+			resolveJsTsExtension,
+			babel({ ...babelOptions }),
+			bundleSize()
+		],
+	},
+	{
+		input: './src/tokenize.scss.iife.ts',
+		output: {
+			esModule: false,
+			exports: 'default',
+			file: './dist/tokenizeSCSS.js',
+			format: 'iife',
+			name: 'tokenizeSCSS',
+			strict: false,
+			sourcemap: false,
+		},
+		plugins: [
+			resolveJsTsExtension,
+			babel({ ...babelOptions }),
+			terser({ ...terserOptions }),
+			reduceImpact,
+			bundleSize(),
+		]
+	},
 ])
 
 export default config

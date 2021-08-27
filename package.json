@@ -18,6 +18,11 @@
       "require": "./dist/tokenize.cjs",
       "import": "./dist/tokenize.mjs",
       "types": "./dist/tokenize.d.ts"
+    },
+    "./tokenizeSCSS": {
+      "require": "./dist/tokenizeSCSS.cjs",
+      "import": "./dist/tokenizeSCSS.mjs",
+      "types": "./dist/tokenize.d.ts"
     }
   },
   "files": [
