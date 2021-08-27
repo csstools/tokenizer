@@ -1,5 +1,9 @@
 # Changes to CSS Tokenizer
 
+### 3.1.0 (August 27, 2021)
+
+- Added SCSS tokenization as `@csstools/tokenizer/tokenizeSCSS`.
+
 ### 3.0.0 (August 23, 2021)
 
 - Changes the shape of tokens from an array to an object.
