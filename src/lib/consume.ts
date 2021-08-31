@@ -243,8 +243,10 @@ const consumeIdentifierValue = (state: CSSState) => {
 /** Consume and return an identifier or function token. [↗](https://drafts.csswg.org/css-syntax/#consume-an-identifier) */
 const consumeIdentifierLikeToken = (state: CSSState, token: CSSToken) => {
 	if (state.codeAt0 === cp.LEFT_PARENTHESIS) {
-		token.type = tt.ACTION
-		token.tail = '('
+		token.code = 40
+		token.type = tt.FUNCTION
+		token.lead = token.data
+		token.data = '('
 		state.next()
 	}
 	return token

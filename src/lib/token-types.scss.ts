@@ -10,8 +10,8 @@ export const SPACE                       = 0x0003
 /** [`<word-token>`](https://drafts.csswg.org/css-syntax/#ident-token-diagram) */
 export const WORD                        = 0x0004
 
-/** [`<action-token>`](https://drafts.csswg.org/css-syntax/#function-token-diagram) */
-export const ACTION                      = 0x0005
+/** [`<function-token>`](https://drafts.csswg.org/css-syntax/#function-token-diagram) */
+export const FUNCTION                    = 0x0005
 
 /** [`<atword-token>`](https://drafts.csswg.org/css-syntax/#at-keyword-token-diagram) */
 export const ATWORD                      = 0x0006

@@ -88,22 +88,22 @@ interface CSSToken {
     | 2 // Comment
     | 3 // Space
     | 4 // Word
-    | 5 // Action
+    | 5 // Function
     | 6 // Atword
     | 7 // Hash
     | 8 // String
     | 9 // Number
   
-  /** Character code (when a Symbol, otherwise -1) */
+  /** Code, like the character code of a symbol, or the character code of the opening parenthesis of a function. */
   code: number
 
-  /** Lead, like the opening of a comment or the quotation mark of a string. */
+  /** Lead, like the opening of a comment, the quotation mark of a string, or the name of a function. */
   lead: string,
 
-  /** Data, like the numbers before a unit, or the letters after an at-sign. */
+  /** Data, like the numbers before a unit, the word after an at-sign, or the opening parenthesis of a Function. */
   data: string,
 
-  /** Tail, like the unit of a number, or the closing of a comment. */
+  /** Tail, like the unit after a number, or the closing of a comment. */
   tail: string,
 }
 ```
