@@ -58,6 +58,19 @@ describe('Tokenization', () => {
 		expect(Array.from(tokenize(`.1em`))).toHaveLength(1)
 		expect(Array.from(tokenize(`+.1em`))).toHaveLength(1)
 		expect(Array.from(tokenize(`-.1em`))).toHaveLength(1)
+
+		expect(Array.from(tokenize(`0%`))).toHaveLength(1)
+		expect(Array.from(tokenize(`+0%`))).toHaveLength(1)
+		expect(Array.from(tokenize(`-0%`))).toHaveLength(1)
+		expect(Array.from(tokenize(`.0%`))).toHaveLength(1)
+		expect(Array.from(tokenize(`+.0%`))).toHaveLength(1)
+		expect(Array.from(tokenize(`-.0%`))).toHaveLength(1)
+		expect(Array.from(tokenize(`1%`))).toHaveLength(1)
+		expect(Array.from(tokenize(`+1%`))).toHaveLength(1)
+		expect(Array.from(tokenize(`-1%`))).toHaveLength(1)
+		expect(Array.from(tokenize(`.1%`))).toHaveLength(1)
+		expect(Array.from(tokenize(`+.1%`))).toHaveLength(1)
+		expect(Array.from(tokenize(`-.1%`))).toHaveLength(1)
 	})
 
 	test('Tokenizing delimiters', () => {

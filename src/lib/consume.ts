@@ -354,7 +354,7 @@ const consumeDigitValue = (state: CSSState) => {
 	return result
 }
 
-/** Consumes and returns a numeric unit value. [↗](https://drafts.csswg.org/css-syntax/#consume-an-identifier) */
+/** Consumes and returns a numeric unit value. [↗](https://drafts.csswg.org/css-syntax/#consume-numeric-token) */
 const consumeNumericUnitValue = (state: CSSState) => (
 	state.codeAt0 === cp.HYPHEN_MINUS
 		? state.codeAt1 === cp.HYPHEN_MINUS
@@ -364,6 +364,8 @@ const consumeNumericUnitValue = (state: CSSState) => (
 		: is.validEscape(state.codeAt1, state.codeAt2)
 			? consumeAnyValue(state) + consumeAnyValue(state) + consumeAnyValue(state) + consumeIdentifierValue(state)
 		: ''
+	: state.codeAt0 === cp.PERCENT_SIGN
+		? consumeAnyValue(state)
 	: is.identifierStart(state.codeAt0)
 		? consumeAnyValue(state) + consumeIdentifierValue(state)
 	: is.validEscape(state.codeAt0, state.codeAt1)
