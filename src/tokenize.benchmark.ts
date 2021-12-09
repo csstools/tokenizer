@@ -1,6 +1,7 @@
 import * as fs from 'fs'
 import Benchmark from 'benchmark'
-import csstree from 'css-tree'
+import csstree1 from 'css-tree1'
+import * as csstree2 from 'css-tree2/tokenizer'
 import postcss from 'postcss/lib/tokenize'
 
 import { tokenize } from './tokenize.js'
@@ -31,19 +32,27 @@ const createCaseTokenizer = (css: string) => () => {
 	counter.value = count
 }
 
-const createCaseCssTree = (css: string) => () => {
+const createCaseCssTree1 = (css: string) => () => {
 	let count = 0
-	let ast = csstree.parse(css)
-	csstree.walk(ast, () => {
-		++count
-	})
+	const tokenStream = csstree1.tokenize(css)
+	while (!tokenStream.eof) {
+		tokenStream.next();
+		count++;
+	}
+	counter.value = count
+}
+
+const createCaseCssTree2 = (css: string) => () => {
+	let count = 0
+	csstree2.tokenize(css, () => count++);
 	counter.value = count
 }
 
 const initializeBenchmark = (suite: Suite, css: string) => {
 	counter.value = 0
 
-	suite.add('CSSTree 1', createCaseCssTree(css))
+	suite.add('CSSTree 1', createCaseCssTree1(css))
+	suite.add('CSSTree 2', createCaseCssTree2(css))
 	suite.add('PostCSS 8', createCasePostCSS(css))
 	suite.add('Tokenizer', createCaseTokenizer(css))
 
