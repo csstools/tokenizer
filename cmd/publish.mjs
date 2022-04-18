@@ -4,7 +4,7 @@ import './build.mjs'
 
 const isDryRun = Boolean(process?.env?.npm_config_dryRun)
 
-console.log(), console.log('Starting publishing...')
+console.log(), console.log('Publishing...')
 
 _.question.options = { input: process.stdin, output: process.stdout }
 

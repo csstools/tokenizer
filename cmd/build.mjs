@@ -2,7 +2,7 @@ import * as _ from './_.mjs'
 
 const isWatch = process.argv.includes('--watch')
 
-console.log(`Starting compilation...`)
+console.log(`Building...`)
 
 _.rmdir('dist')
 _.mkdir('dist')

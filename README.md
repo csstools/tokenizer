@@ -31,9 +31,9 @@ Tokenize CSS in JavaScript:
 ```js
 import { tokenize } from '@csstools/tokenizer'
 
-for (const token of tokenize(cssText)) {
+tokenize(cssText, (token) => {
   console.log(token) // logs an individual CSSToken
-}
+})
 ```
 
 Tokenize CSS in _classical_ NodeJS:
@@ -41,11 +41,9 @@ Tokenize CSS in _classical_ NodeJS:
 ```js
 const { tokenizer } = require('@csstools/tokenizer')
 
-let iterator = tokenizer(cssText), iteration
-
-while (!(iteration = iterator()).done) {
-  console.log(iteration.value) // logs an individual CSSToken
-}
+tokenize(cssText, (token) => {
+  console.log(token) // logs an individual CSSToken
+})
 ```
 
 Tokenize CSS in client-side scripts:
@@ -62,17 +60,6 @@ for (const token of tokenize(cssText)) {
 </script>
 ```
 
-Tokenize CSS in _classical_ client-side scripts:
-
-```html
-<script src="http://unpkg.com/@csstools/tokenizer"></script>
-<script>
-
-const tokens = Array.from(tokenizeCSS(cssText)) // an array of CSSTokens
-
-</script>
-```
-
 ## How it works
 
 The CSS tokenizer separates a string of CSS into tokens.
@@ -82,29 +69,14 @@ interface CSSToken {
   /** Position in the string at which the token was retrieved. */
   tick: number
 
-  /** Number identifying the kind of token. */
-  type:
-    | 1 // Symbol
-    | 2 // Comment
-    | 3 // Space
-    | 4 // Word
-    | 5 // Function
-    | 6 // Atword
-    | 7 // Hash
-    | 8 // String
-    | 9 // Number
-  
-  /** Code, like the character code of a symbol, or the character code of the opening parenthesis of a function. */
-  code: number
+  /** Number identifying the kind of token; or the character code of a symbol. */
+  type: number
 
-  /** Lead, like the opening of a comment, the quotation mark of a string, or the name of a function. */
-  lead: string,
+  /** Data, the number of characters in the token. */
+  data: number,
 
-  /** Data, like the numbers before a unit, the word after an at-sign, or the opening parenthesis of a Function. */
-  data: string,
-
-  /** Tail, like the unit after a number, or the closing of a comment. */
-  tail: string,
+  /** Tail, the number of characters in a unit after a number, or in the closing of a comment. */
+  edge: string,
 }
 ```
 
@@ -112,28 +84,28 @@ As an example, the CSS string `@media` would become a **Atword** token where `@`
 
 ## Benchmarks
 
-As of August 23, 2021, these benchmarks were averaged from my local machine:
+As of April 11, 2022, these benchmarks were reported from my local machine:
 
 ```
 Benchmark: Tailwind CSS
   ┌────────────────────────────────────────────────────┬───────┬────────┬────────┐
   │                      (index)                       │  ms   │ ms/50k │ tokens │
   ├────────────────────────────────────────────────────┼───────┼────────┼────────┤
-  │ CSSTree 1 x 35.04 ops/sec ±6.55% (64 runs sampled) │ 28.54 │  1.51  │ 946205 │
-  │ CSSTree 2 x 41.76 ops/sec ±7.57% (58 runs sampled) │ 23.95 │  1.27  │ 946205 │
-  │ PostCSS 8 x 14.18 ops/sec ±3.31% (40 runs sampled) │ 70.54 │  3.77  │ 935282 │
-  │ Tokenizer x 17.40 ops/sec ±0.98% (48 runs sampled) │ 57.48 │  3.04  │ 946206 │
+  │ CSSTree 1 x 35.86 ops/sec ±6.82% (65 runs sampled) │ 27.88 │  1.47  │ 946205 │
+  │ CSSTree 2 x 43.15 ops/sec ±7.57% (60 runs sampled) │ 23.17 │  1.22  │ 946205 │
+  │ PostCSS 8 x 14.82 ops/sec ±2.33% (42 runs sampled) │ 67.46 │  3.61  │ 935282 │
+  │ CSS Tools x 36.76 ops/sec ±0.14% (65 runs sampled) │ 27.2  │  1.44  │ 946205 │
   └────────────────────────────────────────────────────┴───────┴────────┴────────┘
 
-Benchmark: Bootstrap
-  ┌───────────────────────────────────────────────────┬──────┬────────┬────────┐
-  │                      (index)                      │  ms  │ ms/50k │ tokens │
-  ├───────────────────────────────────────────────────┼──────┼────────┼────────┤
-  │ CSSTree 1 x 600 ops/sec ±0.87% (96 runs sampled)  │ 1.67 │  1.41  │ 59236  │
-  │ CSSTree 2 x 695 ops/sec ±0.08% (100 runs sampled) │ 1.44 │  1.21  │ 59236  │
-  │ PostCSS 8 x 432 ops/sec ±0.94% (94 runs sampled)  │ 2.31 │  2.26  │ 51170  │
-  │ Tokenizer x 288 ops/sec ±0.40% (93 runs sampled)  │ 3.48 │  2.93  │ 59237  │
-  └───────────────────────────────────────────────────┴──────┴────────┴────────┘
+Benchmark: Bootstrap CSS
+  ┌──────────────────────────────────────────────────┬──────┬────────┬────────┐
+  │                     (index)                      │  ms  │ ms/50k │ tokens │
+  ├──────────────────────────────────────────────────┼──────┼────────┼────────┤
+  │ CSSTree 1 x 608 ops/sec ±0.26% (97 runs sampled) │ 1.65 │  1.38  │ 59543  │
+  │ CSSTree 2 x 702 ops/sec ±0.16% (97 runs sampled) │ 1.42 │  1.2   │ 59543  │
+  │ PostCSS 8 x 440 ops/sec ±0.10% (94 runs sampled) │ 2.27 │  2.21  │ 51453  │
+  │ CSS Tools x 623 ops/sec ±0.15% (97 runs sampled) │ 1.61 │  1.35  │ 59543  │
+  └──────────────────────────────────────────────────┴──────┴────────┴────────┘
 ```
 
 ## Development
@@ -161,7 +133,7 @@ npm run benchmark
 
 The **test** command tests the coverage and accuracy of the tokenizer.
 
-As of September 26, 2020, this tokenizer has 100% test coverage:
+As of April 18, 2022, this tokenizer maintains 100% test coverage:
 
 ```sh
 npm run test

@@ -1,6 +1,7 @@
 import * as fs from 'fs'
 import Benchmark from 'benchmark'
 import csstree1 from 'css-tree1'
+// @ts-ignore
 import * as csstree2 from 'css-tree2/tokenizer'
 import postcss from 'postcss/lib/tokenize'
 
@@ -26,9 +27,8 @@ const createCasePostCSS = (css: string) => () => {
 }
 
 const createCaseTokenizer = (css: string) => () => {
-	let count = 1
-	let tokenizer = tokenize(css)
-	while (!tokenizer().done) ++count
+	let count = 0
+	tokenize(css, () => ++count)
 	counter.value = count
 }
 
@@ -37,14 +37,14 @@ const createCaseCssTree1 = (css: string) => () => {
 	const tokenStream = csstree1.tokenize(css)
 	while (!tokenStream.eof) {
 		tokenStream.next();
-		count++;
+		++count;
 	}
 	counter.value = count
 }
 
 const createCaseCssTree2 = (css: string) => () => {
 	let count = 0
-	csstree2.tokenize(css, () => count++);
+	csstree2.tokenize(css, () => ++count);
 	counter.value = count
 }
 
@@ -54,7 +54,7 @@ const initializeBenchmark = (suite: Suite, css: string) => {
 	suite.add('CSSTree 1', createCaseCssTree1(css))
 	suite.add('CSSTree 2', createCaseCssTree2(css))
 	suite.add('PostCSS 8', createCasePostCSS(css))
-	suite.add('Tokenizer', createCaseTokenizer(css))
+	suite.add('CSS Tools', createCaseTokenizer(css))
 
 	suite.on('cycle', (evt: { target: { tokensCount: number }}) => evt.target.tokensCount = counter.value)
 	suite.on('complete', () => {
@@ -82,14 +82,14 @@ const initializeBenchmark = (suite: Suite, css: string) => {
 const cssBootstrap = fs.readFileSync('./node_modules/bootstrap/dist/css/bootstrap.css', 'utf-8')
 const cssTailwind = fs.readFileSync('./node_modules/tailwindcss/dist/tailwind.css', 'utf-8')
 
-const suiteBootstrap = initializeBenchmark(new Benchmark.Suite('Bootstrap') as unknown as Suite, cssBootstrap)
+const suiteBootstrap = initializeBenchmark(new Benchmark.Suite('Bootstrap CSS') as unknown as Suite, cssBootstrap)
 const suiteTailwind = initializeBenchmark(new Benchmark.Suite('Tailwind CSS') as unknown as Suite, cssTailwind)
 
 console.log()
-console.log('Starting benchmarking...')
+console.log('Benchmarking...')
 
 suiteTailwind.run()
 suiteBootstrap.run()
 
 console.log()
-console.log('Finished benchmarking.')
+console.log('Benchmarking complete.')

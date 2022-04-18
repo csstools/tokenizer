@@ -29,17 +29,19 @@ const resolveJsTsExtension = {
 	}
 }
 
-const reduceImpact = {
+const reduceImpact = (trim = 0) => ({
 	name: 'reduce-impact',
 	renderChunk(code) {
 		const str = new MagicString(code)
-		str.trim(';').remove(0, 4)
+
+		str.trim(';').remove(0, trim)
+
 		return {
 			code: str.toString(),
 			map: str.generateMap({ hires: true }),
 		}
 	}
-}
+})
 
 const config = /** @type {import('rollup').NormalizedInputOptions[]} */ ([
 	{
@@ -55,6 +57,8 @@ const config = /** @type {import('rollup').NormalizedInputOptions[]} */ ([
 		plugins: [
 			resolveJsTsExtension,
 			babel({ ...babelOptions }),
+			terser({ ...terserOptions }),
+			reduceImpact(0),
 			bundleSize()
 		],
 	},
@@ -71,6 +75,8 @@ const config = /** @type {import('rollup').NormalizedInputOptions[]} */ ([
 		plugins: [
 			resolveJsTsExtension,
 			babel({ ...babelOptions }),
+			terser({ ...terserOptions }),
+			reduceImpact(13),
 			bundleSize()
 		],
 	},
@@ -89,7 +95,7 @@ const config = /** @type {import('rollup').NormalizedInputOptions[]} */ ([
 			resolveJsTsExtension,
 			babel({ ...babelOptions }),
 			terser({ ...terserOptions }),
-			reduceImpact,
+			reduceImpact(4),
 			bundleSize(),
 		]
 	},
@@ -106,6 +112,8 @@ const config = /** @type {import('rollup').NormalizedInputOptions[]} */ ([
 		plugins: [
 			resolveJsTsExtension,
 			babel({ ...babelOptions }),
+			terser({ ...terserOptions }),
+			reduceImpact(0),
 			bundleSize()
 		],
 	},
@@ -122,6 +130,8 @@ const config = /** @type {import('rollup').NormalizedInputOptions[]} */ ([
 		plugins: [
 			resolveJsTsExtension,
 			babel({ ...babelOptions }),
+			terser({ ...terserOptions }),
+			reduceImpact(13),
 			bundleSize()
 		],
 	},
@@ -140,7 +150,7 @@ const config = /** @type {import('rollup').NormalizedInputOptions[]} */ ([
 			resolveJsTsExtension,
 			babel({ ...babelOptions }),
 			terser({ ...terserOptions }),
-			reduceImpact,
+			reduceImpact(4),
 			bundleSize(),
 		]
 	},

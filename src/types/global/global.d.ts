@@ -2,8 +2,6 @@
 export type CSSState = {
 	/** CSS data. */
 	data: string
-	/** Number of characters in the CSS data. */
-	size: number
 	/** Current position in the CSS data. */
 	tick: number
 	/** Unicode character for the current position in the CSS data. */
@@ -14,8 +12,6 @@ export type CSSState = {
 	codeAt2: number
 	/** Unicode character for the 3 ahead position in the CSS data. */
 	codeAt3: number
-	/** Advances the unicode characters being read from the CSS data by one position. */
-	next(): boolean
 }
 
 /** The CSS iterator produces a sequence of CSS tokens in an iterator pattern. */
@@ -27,20 +23,15 @@ export type CSSIterator = {
 }
 
 /** The CSS iteration represents the most recent state and token yielded from the CSS iterator. */
-export type CSSIteration = {
-	done: boolean
-	value: CSSToken
-}
+export type CSSIteration = (token: CSSToken) => any
 
 export type CSSToken = {
-	tick: number
-	type: number
+	lead: number
 	code: number
-	lead: string
-	data: string
-	tail: string
+	data: number
+	edge: number
 }
 
-export type CSSTokenize = (data: string) => CSSIterator
+export type CSSTokenize = (data: string, callback: CSSIteration) => void
 
 export declare const tokenize: CSSTokenize

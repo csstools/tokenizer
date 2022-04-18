@@ -4,7 +4,7 @@ const isWatch = process.argv.includes('--watch')
 
 const jestBin = 'node_modules/jest/bin/jest.js'
 
-console.log(`Starting testing...`)
+console.log(`Testing...`)
 console.log()
 
 _.rmdir('coverage')

@@ -4,8 +4,6 @@ import * as cp from './code-points.js'
 import * as is from './is.js'
 import * as tt from './token-types.js'
 
-const { fromCharCode } = String
-
 /** Consumes and returns a token. [↗](https://drafts.csswg.org/css-syntax/#consume-token) */
 export const consume = (
 	/** Condition of the current tokenizer. */
@@ -15,342 +13,307 @@ export const consume = (
 		/* <comment-token>
 		/* https://drafts.csswg.org/css-syntax/#consume-comment */
 		case state.codeAt0 === cp.SOLIDUS:
-			if (state.codeAt1 === cp.ASTERISK) return consumeCommentToken(state)
+			if (state.codeAt1 === cp.ASTERISK) return consumeCommentToken(state, state.tick, consumeAnyValue(state) + consumeAnyValue(state), 0)
 			break
+
 		/* <space-token>
 		/* https://drafts.csswg.org/css-syntax/#whitespace-token-diagram */
-		case is.space(state.codeAt0):
-			return consumeSpaceToken(state)
+		case is.space[state.codeAt0]:
+			return consumeSpaceToken(state, state.tick, consumeAnyValue(state))
+
 		/* <string-token>
 		/* https://drafts.csswg.org/css-syntax/#string-token-diagram */
 		case state.codeAt0 === cp.QUOTATION_MARK:
 		case state.codeAt0 === cp.APOSTROPHE:
 			// "" || ''
-			return consumeStringToken(state)
+			return consumeStringToken(state, state.codeAt0, state.tick, consumeAnyValue(state), 0)
+
 		/* <hash-token>
 		/* https://drafts.csswg.org/css-syntax/#hash-token-diagram */
 		case state.codeAt0 === cp.NUMBER_SIGN:
 			// #W
-			if (is.identifier(state.codeAt1)) return {
-				tick: state.tick,
-				type: tt.HASH,
-				code: -1,
-				lead: consumeAnyValue(state),
-				data: consumeAnyValue(state) + consumeIdentifierValue(state),
-				tail: '',
-			} as CSSToken
-			// #\:
-			if (is.validEscape(state.codeAt1, state.codeAt2)) return {
-				tick: state.tick,
-				type: tt.HASH,
-				code: -1,
-				lead: consumeAnyValue(state),
+			if (is.identifier[state.codeAt1] || state.codeAt1 >= cp.NON_ASCII) return <CSSToken>{
+				lead: state.tick,
+				code: tt.HASH,
 				data: consumeAnyValue(state) + consumeAnyValue(state) + consumeIdentifierValue(state),
-				tail: '',
-			} as CSSToken
+				edge: 0,
+			}
+			// #\:
+			if (is.validEscape(state.codeAt1, state.codeAt2)) return <CSSToken>{
+				lead: state.tick,
+				code: tt.HASH,
+				data: consumeAnyValue(state) + consumeAnyValue(state) + consumeAnyValue(state) + consumeIdentifierValue(state),
+				edge: 0,
+			}
 			break
+
 		/* <ident-token> */
 		/* https://drafts.csswg.org/css-syntax/#ident-token-diagram */
 		case state.codeAt0 === cp.REVERSE_SOLIDUS:
-			if (is.validEscape(state.codeAt0, state.codeAt1)) return consumeIdentifierLikeToken(state, {
-				tick: state.tick,
-				type: tt.WORD,
-				code: -1,
-				lead: '',
-				data: consumeAnyValue(state) + consumeAnyValue(state) + consumeAnyValue(state) + consumeIdentifierValue(state),
-				tail: '',
-			})
+			if (is.validEscape(state.codeAt0, state.codeAt1)) return consumeIdentifierLikeToken(state, state.tick, consumeAnyValue(state) + consumeAnyValue(state) + consumeAnyValue(state) + consumeIdentifierValue(state))
 			break
-		case is.identifierStart(state.codeAt0):
+		case is.identifierStart[state.codeAt0]:
+		case state.codeAt0 >= cp.NON_ASCII:
 			// W
-			return consumeIdentifierLikeToken(state, {
-				tick: state.tick,
-				type: tt.WORD,
-				code: -1,
-				lead: '',
-				data: consumeAnyValue(state) + consumeIdentifierValue(state),
-				tail: '',
-			})
+			return consumeIdentifierLikeToken(state, state.tick, consumeAnyValue(state) + consumeIdentifierValue(state))
 		case state.codeAt0 === cp.HYPHEN_MINUS:
 			// -W
-			if (state.codeAt1 === cp.HYPHEN_MINUS || is.identifierStart(state.codeAt1)) return consumeIdentifierLikeToken(state, {
-				tick: state.tick,
-				type: tt.WORD,
-				code: -1,
-				lead: '',
-				data: consumeAnyValue(state) + consumeAnyValue(state) + consumeIdentifierValue(state),
-				tail: '',
-			})
+			if (state.codeAt1 === cp.HYPHEN_MINUS || is.identifierStart[state.codeAt1] || state.codeAt1 >= cp.NON_ASCII) return consumeIdentifierLikeToken(state, state.tick, consumeAnyValue(state) + consumeAnyValue(state) + consumeIdentifierValue(state))
 			// -\:
-			if (is.validEscape(state.codeAt1, state.codeAt2)) return consumeIdentifierLikeToken(state, {
-				tick: state.tick,
-				type: tt.WORD,
-				code: -1,
-				lead: '',
-				data: consumeAnyValue(state) + consumeAnyValue(state) + consumeAnyValue(state) + consumeIdentifierValue(state),
-				tail: '',
-			})
+			if (is.validEscape(state.codeAt1, state.codeAt2)) return consumeIdentifierLikeToken(state, state.tick, consumeAnyValue(state) + consumeAnyValue(state) + consumeAnyValue(state) + consumeIdentifierValue(state))
+
 		/* <number-token> */
 		/* https://drafts.csswg.org/css-syntax/#number-token-diagram */
 			// -8
-			if (is.digit(state.codeAt1)) return {
-				tick: state.tick,
-				type: tt.NUMBER,
-				code: -1,
-				lead: '',
+			if (is.digit[state.codeAt1]) return <CSSToken>{
+				lead: state.tick,
+				code: tt.NUMBER,
 				data: consumeAnyValue(state) + consumeAnyValue(state) + consumeNumberSansAdditiveValue(state),
-				tail: consumeNumericUnitValue(state),
-			} as CSSToken
+				edge: consumeNumericUnitValue(state),
+			}
 			// -.8
-			if (state.codeAt1 === cp.FULL_STOP && is.digit(state.codeAt2)) return {
-				tick: state.tick,
-				type: tt.NUMBER,
-				code: -1,
-				lead: '',
+			if (state.codeAt1 === cp.FULL_STOP && is.digit[state.codeAt2]) return <CSSToken>{
+				lead: state.tick,
+				code: tt.NUMBER,
 				data: consumeAnyValue(state) + consumeAnyValue(state) + consumeAnyValue(state) + consumeNumberSansDecimalValue(state),
-				tail: consumeNumericUnitValue(state),
-			} as CSSToken
+				edge: consumeNumericUnitValue(state),
+			}
 		case state.codeAt0 === cp.FULL_STOP:
 			// .8
-			if (is.digit(state.codeAt1)) return {
-				tick: state.tick,
-				type: tt.NUMBER,
-				code: -1,
-				lead: '',
+			if (is.digit[state.codeAt1]) return <CSSToken>{
+				lead: state.tick,
+				code: tt.NUMBER,
 				data: consumeAnyValue(state) + consumeAnyValue(state) + consumeNumberSansDecimalValue(state),
-				tail: consumeNumericUnitValue(state),
-			} as CSSToken
+				edge: consumeNumericUnitValue(state),
+			}
 			break
 		case state.codeAt0 === cp.PLUS_SIGN:
 			// +8
-			if (is.digit(state.codeAt1)) return {
-				tick: state.tick,
+			if (is.digit[state.codeAt1]) return <CSSToken>{
+				lead: state.tick,
 				type: tt.NUMBER,
 				code: -1,
-				lead: '',
 				data: consumeAnyValue(state) + consumeAnyValue(state) + consumeNumberSansAdditiveValue(state),
-				tail: consumeNumericUnitValue(state),
-			} as CSSToken
+				edge: consumeNumericUnitValue(state),
+			}
 			// +.8
-			if (state.codeAt1 === cp.FULL_STOP && is.digit(state.codeAt2)) return {
-				tick: state.tick,
+			if (state.codeAt1 === cp.FULL_STOP && is.digit[state.codeAt2]) return <CSSToken>{
+				lead: state.tick,
 				type: tt.NUMBER,
 				code: -1,
-				lead: '',
 				data: consumeAnyValue(state) + consumeAnyValue(state) + consumeAnyValue(state) + consumeNumberSansDecimalValue(state),
-				tail: consumeNumericUnitValue(state),
-			} as CSSToken
+				edge: consumeNumericUnitValue(state),
+			}
 			break
-		case is.digit(state.codeAt0):
+		case is.digit[state.codeAt0]:
 			// 8
-			return {
-				tick: state.tick,
+			return <CSSToken>{
+				lead: state.tick,
 				type: tt.NUMBER,
 				code: -1,
-				lead: '',
 				data: consumeAnyValue(state) + consumeNumberSansAdditiveValue(state),
-				tail: consumeNumericUnitValue(state),
-			} as CSSToken
+				edge: consumeNumericUnitValue(state),
+			}
+
 		/* <atident-token> */
 		/* https://drafts.csswg.org/css-syntax/#at-keyword-token-diagram */
 		case state.codeAt0 === cp.COMMERCIAL_AT:
 			if (state.codeAt1 === cp.HYPHEN_MINUS) {
 				// @--
-				if (state.codeAt2 === cp.HYPHEN_MINUS) return {
-					tick: state.tick,
-					type: tt.ATWORD,
-					code: -1,
-					lead: consumeAnyValue(state),
-					data: consumeAnyValue(state) + consumeAnyValue(state) + consumeIdentifierValue(state),
-					tail: '',
-				} as CSSToken
-				// @-W
-				if (is.identifierStart(state.codeAt2)) return {
-					tick: state.tick,
-					type: tt.ATWORD,
-					code: -1,
-					lead: consumeAnyValue(state),
-					data: consumeAnyValue(state) + consumeAnyValue(state) + consumeIdentifierValue(state),
-					tail: '',
-				} as CSSToken
-				// @-\:
-				if (is.validEscape(state.codeAt2, state.codeAt3)) return {
-					tick: state.tick,
-					type: tt.ATWORD,
-					code: -1,
-					lead: consumeAnyValue(state),
+				if (state.codeAt2 === cp.HYPHEN_MINUS) return <CSSToken>{
+					lead: state.tick,
+					code: tt.ATWORD,
 					data: consumeAnyValue(state) + consumeAnyValue(state) + consumeAnyValue(state) + consumeIdentifierValue(state),
-					tail: '',
-				} as CSSToken
+					edge: 0,
+				}
+				// @-W
+				if (is.identifierStart[state.codeAt2] || state.codeAt2 >= cp.NON_ASCII) return <CSSToken>{
+					lead: state.tick,
+					code: tt.ATWORD,
+					data: consumeAnyValue(state) + consumeAnyValue(state) + consumeAnyValue(state) + consumeIdentifierValue(state),
+					edge: 0,
+				}
+				// @-\:
+				if (is.validEscape(state.codeAt2, state.codeAt3)) return <CSSToken>{
+					lead: state.tick,
+					code: tt.ATWORD,
+					data: consumeAnyValue(state) + consumeAnyValue(state) + consumeAnyValue(state) + consumeAnyValue(state) + consumeIdentifierValue(state),
+					edge: 0,
+				}
 			}
 			// @W
-			if (is.identifierStart(state.codeAt1)) return {
-				tick: state.tick,
-				type: tt.ATWORD,
-				code: -1,
-				lead: consumeAnyValue(state),
-				data: consumeAnyValue(state) + consumeIdentifierValue(state),
-				tail: '',
-			} as CSSToken
-			// @\:
-			if (is.validEscape(state.codeAt1, state.codeAt2)) return {
-				tick: state.tick,
-				type: tt.ATWORD,
-				code: -1,
-				lead: consumeAnyValue(state),
+			if (is.identifierStart[state.codeAt1] || state.codeAt1 >= cp.NON_ASCII) return <CSSToken>{
+				lead: state.tick,
+				code: tt.ATWORD,
 				data: consumeAnyValue(state) + consumeAnyValue(state) + consumeIdentifierValue(state),
-				tail: '',
-			} as CSSToken
+				edge: 0,
+			}
+			// @\:
+			if (is.validEscape(state.codeAt1, state.codeAt2)) return <CSSToken>{
+				lead: state.tick,
+				code: tt.ATWORD,
+				data: consumeAnyValue(state) + consumeAnyValue(state) + consumeAnyValue(state) + consumeIdentifierValue(state),
+				edge: 0,
+			}
 			break
 	}
+
 	/* <delim-token> */
 	/* https://drafts.csswg.org/css-syntax/#typedef-delim-token */
-	return {
-		tick: state.tick,
-		type: tt.SYMBOL,
+	return <CSSToken>{
+		lead: state.tick,
 		code: state.codeAt0,
-		lead: '',
 		data: consumeAnyValue(state),
-		tail: '',
-	} as CSSToken
+		edge: 0,
+	}
 }
 
 /** Consume and return a value. [↗](https://drafts.csswg.org/css-syntax/#consume-token) */
 const consumeAnyValue = (state: CSSState) => {
-	const result = fromCharCode(state.codeAt0)
-	state.next()
-	return result
+	++state.tick
+
+	state.codeAt0 = state.codeAt1
+	state.codeAt1 = state.codeAt2
+	state.codeAt2 = state.codeAt3
+	state.codeAt3 = state.tick + 3 < state.data.length ? state.data.charCodeAt(state.tick + 3) : -1
+
+	return 1
 }
 
 /** Consume and return an identifier value. [↗](https://drafts.csswg.org/css-syntax/#consume-an-identifier) */
 const consumeIdentifierValue = (state: CSSState) => {
-	let result = ''
-	while (true) {
+	let result = 0
+
+	while (state.tick < state.data.length) {
 		switch (true) {
 			case is.validEscape(state.codeAt0, state.codeAt1):
-				result += fromCharCode(state.codeAt0)
-				state.next()
-			case is.identifier(state.codeAt0):
-				result += fromCharCode(state.codeAt0)
-				state.next()
+				result += consumeAnyValue(state)
+
+			case is.identifier[state.codeAt0]:
+			case state.codeAt0 >= cp.NON_ASCII:
+				result += consumeAnyValue(state)
 				continue
 		}
 		break
 	}
+
 	return result
 }
 
 /** Consume and return an identifier or function token. [↗](https://drafts.csswg.org/css-syntax/#consume-an-identifier) */
-const consumeIdentifierLikeToken = (state: CSSState, token: CSSToken) => {
-	if (state.codeAt0 === cp.LEFT_PARENTHESIS) {
-		token.code = 40
-		token.type = tt.FUNCTION
-		token.lead = token.data
-		token.data = '('
-		state.next()
+const consumeIdentifierLikeToken = (state: CSSState, tick: number, data: number) => {
+	let isFunction = state.codeAt0 === cp.LEFT_PARENTHESIS
+
+	return <CSSToken>{
+		lead: tick,
+		type: isFunction ? tt.FUNCTION : tt.WORD,
+		code: -1,
+		data,
+		edge: isFunction ? consumeAnyValue(state) : 0,
 	}
-	return token
 }
 
 /** Consume and return a comment token. [↗](https://drafts.csswg.org/css-syntax/#consume-comment) */
-const consumeCommentToken = (state: CSSState) => {
-	const token: CSSToken = {
-		tick: state.tick,
-		type: tt.COMMENT,
-		code: -1,
-		lead: '/*',
-		data: '',
-		tail: '',
-	}
-	state.next()
-	state.next()
-	while (state.tick < state.size) {
-		// @ts-ignore
+const consumeCommentToken = (state: CSSState, lead: number, data: number, edge: number) => {
+	while (state.tick < state.data.length) {
 		if (state.codeAt0 === cp.ASTERISK && state.codeAt1 === cp.SOLIDUS) {
-			token.tail = '*/'
-			state.next()
-			state.next()
+			edge = consumeAnyValue(state) + consumeAnyValue(state)
 			break
 		}
-		token.data += consumeAnyValue(state)
+
+		data += consumeAnyValue(state)
 	}
-	return token
+
+	return <CSSToken>{
+		lead: lead,
+		code: tt.COMMENT,
+		data: data,
+		edge: edge,
+	}
 }
 
 /** Consumes and returns a space token. [↗](https://drafts.csswg.org/css-syntax/#whitespace-token-diagram) */
-const consumeSpaceToken = (state: CSSState) => {
-	const token: CSSToken = {
-		tick: state.tick,
-		type: tt.SPACE,
-		code: -1,
-		lead: '',
-		data: consumeAnyValue(state),
-		tail: '',
+const consumeSpaceToken = (state: CSSState, lead: number, data: number) => {
+	while (state.tick < state.data.length) {
+		if (is.space[state.codeAt0]) data += consumeAnyValue(state)
+		else break
 	}
-	while (state.tick < state.size) {
-		if (!is.space(state.codeAt0)) break
-		token.data += consumeAnyValue(state)
+
+	return <CSSToken>{
+		lead: lead,
+		code: tt.SPACE,
+		data: data,
+		edge: 0,
 	}
-	return token
 }
 
 /** Consumes and returns a string token. [↗](https://drafts.csswg.org/css-syntax/#string-token-diagram) */
-const consumeStringToken = (state: CSSState) => {
-	const { codeAt0 } = state
-	const token: CSSToken = {
-		tick: state.tick,
-		type: tt.STRING,
-		code: -1,
-		lead: '',
-		data: consumeAnyValue(state),
-		tail: '',
-	}
-	while (state.tick < state.size) {
+const consumeStringToken = (state: CSSState, code: number, lead: number, data: number, edge: number) => {
+	while (state.tick < state.data.length) {
 		switch (true) {
 			case is.validEscape(state.codeAt0, state.codeAt1):
-				token.data += consumeAnyValue(state)
+				data += consumeAnyValue(state)
 			default:
-				token.data += consumeAnyValue(state)
+				data += consumeAnyValue(state)
 				continue
-			case state.codeAt0 === codeAt0:
-				token.tail = consumeAnyValue(state)
+			case state.codeAt0 === code:
+				edge = consumeAnyValue(state)
 		}
 		break
 	}
-	return token
+
+	return <CSSToken>{
+		lead: lead,
+		code: tt.STRING,
+		data: data,
+		edge: edge,
+	}
 }
 
 /** Consumes and returns a number value after an additive symbol. [↗](https://drafts.csswg.org/css-syntax/#consume-a-number) */
 export const consumeNumberSansAdditiveValue = (state: CSSState) => {
-	let result = ''
-	result += consumeDigitValue(state)
-	if (state.codeAt0 === cp.FULL_STOP && is.digit(state.codeAt1)) result += consumeAnyValue(state) + consumeAnyValue(state) + consumeDigitValue(state)
+	let result = consumeDigitValue(state)
+
+	if (
+		state.codeAt0 === cp.FULL_STOP &&
+		is.digit[state.codeAt1]
+	) {
+		result += consumeAnyValue(state) + consumeAnyValue(state) + consumeDigitValue(state)
+	}
+
 	return result + consumeNumberSansDecimalValue(state)
 }
 
 /** Consumes and returns a number value after a decimal place. [↗](https://drafts.csswg.org/css-syntax/#consume-a-number) */
 const consumeNumberSansDecimalValue = (state: CSSState) => {
-	let result = ''
-	result += consumeDigitValue(state)
+	let result = consumeDigitValue(state)
+
 	if (state.codeAt0 === cp.LATIN_CAPITAL_LETTER_E || state.codeAt0 === cp.LATIN_SMALL_LETTER_E) {
 		switch (true) {
-			case (state.codeAt1 === cp.PLUS_SIGN || state.codeAt1 === cp.HYPHEN_MINUS):
-				if (!is.digit(state.codeAt2)) break
+			case state.codeAt1 === cp.PLUS_SIGN:
+			case state.codeAt1 === cp.HYPHEN_MINUS:
+				if (!is.digit[state.codeAt2]) break
+
 				result += consumeAnyValue(state)
-			case is.digit(state.codeAt1):
+
+			case is.digit[state.codeAt1]:
 				result += consumeAnyValue(state) + consumeAnyValue(state) + consumeDigitValue(state)
 		}
 	}
+
 	return result
 }
 
 /** Consumes and returns a digit value. [↗](https://drafts.csswg.org/css-syntax/#consume-a-number) */
 const consumeDigitValue = (state: CSSState) => {
-	let result = ''
-	while (state.tick < state.size) {
-		if (!is.digit(state.codeAt0)) break
+	let result = 0
+
+	while (state.tick < state.data.length) {
+		if (!is.digit[state.codeAt0]) break
+
 		result += consumeAnyValue(state)
 	}
+
 	return result
 }
 
@@ -359,16 +322,16 @@ const consumeNumericUnitValue = (state: CSSState) => (
 	state.codeAt0 === cp.HYPHEN_MINUS
 		? state.codeAt1 === cp.HYPHEN_MINUS
 			? consumeAnyValue(state) + consumeAnyValue(state) + consumeIdentifierValue(state)
-		: is.identifierStart(state.codeAt1)
+		: is.identifierStart[state.codeAt1] || state.codeAt1 >= cp.NON_ASCII
 			? consumeAnyValue(state) + consumeAnyValue(state) + consumeIdentifierValue(state)
 		: is.validEscape(state.codeAt1, state.codeAt2)
 			? consumeAnyValue(state) + consumeAnyValue(state) + consumeAnyValue(state) + consumeIdentifierValue(state)
-		: ''
+		: 0
 	: state.codeAt0 === cp.PERCENT_SIGN
 		? consumeAnyValue(state)
-	: is.identifierStart(state.codeAt0)
+	: is.identifierStart[state.codeAt0] || state.codeAt0 >= cp.NON_ASCII
 		? consumeAnyValue(state) + consumeIdentifierValue(state)
 	: is.validEscape(state.codeAt0, state.codeAt1)
 		? consumeAnyValue(state) + consumeAnyValue(state) + consumeIdentifierValue(state)
-	: ''
+	: 0
 )
