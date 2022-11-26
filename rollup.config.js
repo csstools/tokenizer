@@ -19,6 +19,8 @@ const terserOptions = {
 			...tt,
 		},
 	},
+	keep_classnames: /^CSS\w+$/,
+	keep_fnames: /^(parse|tokenize)$/,
 }
 
 const resolveJsTsExtension = {
@@ -88,61 +90,6 @@ const config = /** @type {import('rollup').NormalizedInputOptions[]} */ ([
 			file: './dist/tokenize.js',
 			format: 'iife',
 			name: 'tokenizeCSS',
-			strict: false,
-			sourcemap: false,
-		},
-		plugins: [
-			resolveJsTsExtension,
-			babel({ ...babelOptions }),
-			terser({ ...terserOptions }),
-			reduceImpact(4),
-			bundleSize(),
-		]
-	},
-	{
-		input: './src/tokenize.scss.ts',
-		output: {
-			esModule: false,
-			exports: 'named',
-			file: './dist/tokenizeSCSS.mjs',
-			format: 'esm',
-			strict: true,
-			sourcemap: true,
-		},
-		plugins: [
-			resolveJsTsExtension,
-			babel({ ...babelOptions }),
-			terser({ ...terserOptions }),
-			reduceImpact(0),
-			bundleSize()
-		],
-	},
-	{
-		input: './src/tokenize.scss.ts',
-		output: {
-			esModule: false,
-			exports: 'named',
-			file: './dist/tokenizeSCSS.cjs',
-			format: 'cjs',
-			strict: true,
-			sourcemap: true,
-		},
-		plugins: [
-			resolveJsTsExtension,
-			babel({ ...babelOptions }),
-			terser({ ...terserOptions }),
-			reduceImpact(13),
-			bundleSize()
-		],
-	},
-	{
-		input: './src/tokenize.scss.iife.ts',
-		output: {
-			esModule: false,
-			exports: 'default',
-			file: './dist/tokenizeSCSS.js',
-			format: 'iife',
-			name: 'tokenizeSCSS',
 			strict: false,
 			sourcemap: false,
 		},

@@ -1,23 +1,28 @@
-import { CSSToken } from './types/global/global.js'
 import * as fs from 'fs'
-import { tokenize } from './tokenize.js'
+import { tokenize, Token } from './tokenize.js'
 
-const getTailIndex = (token: CSSToken) => token.lead + token.data + token.edge
-const getLeadIndex = (token: CSSToken) => token.lead
-const getTokenString = (string: string, token: CSSToken) => string.slice(getLeadIndex(token), getTailIndex(token))
+const getTokenString = (string: string, token: Token) => string.slice(token.enter, token.leave)
 const getTokenArray = (string: string) => {
-	let array = []
-	tokenize(string, array.push.bind(array))
-	return array
+	let tokens: string[] = []
+	let tokenizer = tokenize(string)
+	let token: Token | undefined
+
+	while (token = tokenizer()) {
+		tokens.push(getTokenString(string, token))
+	}
+
+	return tokens
 }
 
 describe('Tokenization', () => {
 	test('Tokenizing an empty value', () => {
 		let sourceCSS = ''
 		let resultCSS = ''
-		tokenize(sourceCSS, token => {
+
+		for (let tokenizer = tokenize(sourceCSS), token: Token | undefined; token = tokenizer(); ) {
 			resultCSS += getTokenString(sourceCSS, token)
-		})
+		}
+
 		expect(sourceCSS).toBe(resultCSS)
 	})
 
@@ -25,10 +30,14 @@ describe('Tokenization', () => {
 		let sourceCSS = '/* '
 		let resultCSS = ''
 		let count = 0
-		tokenize(sourceCSS, (token) => {
+		let tokenizer = tokenize(sourceCSS)
+		let token: Token | undefined
+
+		while (token = tokenizer()) {
 			resultCSS += getTokenString(sourceCSS, token)
 			++count
-		})
+		}
+
 		expect(sourceCSS).toBe(resultCSS)
 		expect(count).toBe(1)
 	})
@@ -112,10 +121,14 @@ describe('Tokenization', () => {
 		expect(getTokenArray(`\\^-_` + `#\\^-_` + `@\\^-_`)).toHaveLength(3)
 		expect(getTokenArray(`-\\^-_` + `#-\\^-_` + `@-\\^-_`)).toHaveLength(3)
 		expect(getTokenArray(`-A\\^-_` + `#A\\^-_` + `@A-\\^-_`)).toHaveLength(3)
+
+		expect(getTokenArray(`#\\!`)).toHaveLength(1)
+		expect(getTokenArray(`#\\\n`)).toHaveLength(3)
+
 	})
 
 	test('Tokenizing unusual numbers', () => {
-		let tokens: CSSToken[]
+		let tokens: string[]
 
 		tokens = getTokenArray(`1em`)
 		expect(tokens).toHaveLength(1)
@@ -136,6 +149,7 @@ describe('Tokenization', () => {
 			...getTokenArray(`1z`),
 		]
 		expect(tokens).toHaveLength(8)
+
 		tokens = [
 			...getTokenArray(`1-_`),
 			...getTokenArray(`1-™`),
@@ -193,18 +207,22 @@ describe('Library accuracy', () => {
 	test('Bootstrap', () => {
 		let sourceCSS = fs.readFileSync('./node_modules/bootstrap/dist/css/bootstrap.css', 'utf-8')
 		let resultCSS = ''
-		tokenize(sourceCSS, token => {
+
+		for (let tokenizer = tokenize(sourceCSS), token: Token | undefined; token = tokenizer(); ) {
 			resultCSS += getTokenString(sourceCSS, token)
-		})
+		}
+
 		expect(sourceCSS).toBe(resultCSS)
 	})
 
 	test('Tailwind CSS', () => {
 		let sourceCSS = fs.readFileSync('./node_modules/tailwindcss/dist/tailwind.css', 'utf-8')
 		let resultCSS = ''
-		tokenize(sourceCSS, token => {
+
+		for (let tokenizer = tokenize(sourceCSS), token: Token | undefined; token = tokenizer(); ) {
 			resultCSS += getTokenString(sourceCSS, token)
-		})
+		}
+
 		expect(sourceCSS).toBe(resultCSS)
 	})
 })

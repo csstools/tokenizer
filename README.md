@@ -8,7 +8,7 @@
 [<img alt="support chat" src="https://img.shields.io/badge/support-chat-blue.svg" height="20">](https://gitter.im/postcss/postcss)
 
 This tools lets you tokenize CSS according to the [CSS Syntax Specification](https://drafts.csswg.org/css-syntax/).
-Tokenizing CSS is separating a string of CSS into its smallest, semantic parts — otherwise known as tokens.
+Tokenizing CSS is separating a string of CSS into its smallest distinct parts — otherwise known as tokens.
 
 This tool is intended to be used in other tools on the front and back end. It seeks to maintain:
 
@@ -16,71 +16,69 @@ This tool is intended to be used in other tools on the front and back end. It se
 - 100% code coverage. 🦺
 - 100% static typing. 💪
 - 1kB maximum contribution size. 📦
-- Superior quality over Shark P. 🦈
 
 ## Usage
 
 Add the [CSS tokenizer](https://github.com/csstools/tokenizer) to your project:
 
-```sh
+```shell
 npm install @csstools/tokenizer
 ```
 
-Tokenize CSS in JavaScript:
+Tokenize a string of CSS:
 
 ```js
-import { tokenize } from '@csstools/tokenizer'
+import { tokenize } from 'https://unpkg.com/@csstools/tokenizer'
+
+const cssText = 'auto 50px'
 
 tokenize(cssText, (token) => {
-  console.log(token) // logs an individual CSSToken
+  // 1st time, `token` will represent the word "auto"
+  // 2nd time, `token` will represent the space " "
+  // 3rd time, `token` will represent the number "50px"
 })
-```
-
-Tokenize CSS in _classical_ NodeJS:
-
-```js
-const { tokenizer } = require('@csstools/tokenizer')
-
-tokenize(cssText, (token) => {
-  console.log(token) // logs an individual CSSToken
-})
-```
-
-Tokenize CSS in client-side scripts:
-
-```html
-<script type="module">
-
-import { tokenize } from 'https://unpkg.com/@csstools/tokenizer?module'
-
-for (const token of tokenize(cssText)) {
-  console.log(token) // logs an individual CSSToken
-}
-
-</script>
 ```
 
 ## How it works
 
 The CSS tokenizer separates a string of CSS into tokens.
+Each token is an object that represents information about a distinct part of the CSS.
+Then token object includes a token **class**, an **enter** index, a **leave** index, and a **split** index.
 
-```ts
-interface CSSToken {
-  /** Position in the string at which the token was retrieved. */
-  tick: number
+```js
+import { tokenize } from 'https://unpkg.com/@csstools/tokenizer'
 
-  /** Number identifying the kind of token; or the character code of a symbol. */
-  type: number
+const cssText = 'auto 50px'
 
-  /** Data, the number of characters in the token. */
-  data: number,
-
-  /** Tail, the number of characters in a unit after a number, or in the closing of a comment. */
-  edge: string,
-}
+tokenize(cssText, (token) => {
+  console.log(
+    token.class,
+    token.enter,
+    token.leave,
+    token.split
+  )
+})
 ```
 
-As an example, the CSS string `@media` would become a **Atword** token where `@` and `media` are recognized as distinct parts of that token. As another example, the CSS string `5px` would become a **Number** token where `5` and `px` are recognized as distinct parts of that token. As a final example, the string `5px 10px` would become 3 tokens; the **Number** as mentioned before (`5px`), a **Space** token that represents a single space (` `), and then another **Number** token (`10px`).
+The value of **class** identifies the kind of token that has been consumed.
+
+The value of **enter** identifies the position where the token begins.
+
+The value of **leave** identifies the position where the token ends.
+
+The value of **split** identifies the position where the token may be split into two smaller parts.
+In a token representing `50px`, this is the position between `50` and `px`.
+In a token representing `"string"`, this is the position between `"string` and `"`.
+In a token representing `/* test */`, this is the position between `/* test ` and `*/`.
+
+```ts
+interface Token {
+	token: number
+	enter: number
+	split: number
+	leave: number
+}
+```
 
 ## Benchmarks
 
@@ -116,8 +114,16 @@ You wanna take a deeper dive? Awesome! Here are a few useful development command
 
 The **build** command creates all the files needed to run this tool in many different JavaScript environments.
 
-```sh
+```shell
 npm run build
+```
+
+### npm run test
+
+The **test** command tests the coverage and accuracy of the tokenizer.
+
+```shell
+npm run test
 ```
 
 ### npm run benchmark
@@ -125,18 +131,8 @@ npm run build
 The **benchmark** command builds the project and then tests its performance as compared to [PostCSS].
 These benchmarks are run against [Boostrap] and [Tailwind CSS].
 
-```sh
+```shell
 npm run benchmark
-```
-
-### npm run test
-
-The **test** command tests the coverage and accuracy of the tokenizer.
-
-As of April 18, 2022, this tokenizer maintains 100% test coverage:
-
-```sh
-npm run test
 ```
 
 [Boostrap]: https://getbootstrap.com

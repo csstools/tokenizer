@@ -5,6 +5,7 @@
     "allowSyntheticDefaultImports": true,
     "alwaysStrict": true,
     "declaration": true,
+    "downlevelIteration": true,
     "emitDeclarationOnly": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
@@ -28,11 +29,6 @@
     "sourceMap": true,
     "strict": true,
     "target": "ESNext",
-    "typeRoots": [
-      "node_modules/@types",
-      "src/types",
-      "src/types/global"
-    ],
     "types": [
       "jest",
       "node"

@@ -1,5 +1,8 @@
 import * as cp from './code-points.js'
 
+/** Returns whether the unicode value is a space. [↗](https://drafts.csswg.org/css-syntax/#whitespace) */
+export const ascii = {} as { [code: number]: boolean }
+
 /** Returns whether the unicode value is a digit. [↗](https://drafts.csswg.org/css-syntax/#digit) */
 export const digit = {} as { [code: number]: boolean }
 
@@ -19,6 +22,8 @@ export const validEscape = (code1of2: number, code2of2: number) => (
 )
 
 for (let code = 0; code <= cp.NON_ASCII; ++code) {
+	ascii[code] = true
+
 	switch (true) {
 		case code >= cp.DIGIT_ZERO && code <= cp.DIGIT_NINE:
 			identifier[code] = true

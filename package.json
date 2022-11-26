@@ -7,7 +7,7 @@
   "main": "dist/tokenize.cjs",
   "module": "dist/tokenize.mjs",
   "types": "dist/tokenize.d.ts",
-  "unpkg": "dist/tokenize.js",
+  "unpkg": "dist/tokenize.mjs",
   "exports": {
     ".": {
       "require": "./dist/tokenize.cjs",
@@ -41,7 +41,7 @@
   "author": "Jonathan Neal <jonathantneal@hotmail.com>",
   "bugs": "https://github.com/csstools/tokenizer/issues",
   "homepage": "https://github.com/csstools/tokenizer",
-  "repository": "https://github.com/csstools/postcss-tape.git",
+  "repository": "https://github.com/csstools/tokenizer.git",
   "publishConfig": {
     "access": "public"
   },

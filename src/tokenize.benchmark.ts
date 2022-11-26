@@ -27,8 +27,13 @@ const createCasePostCSS = (css: string) => () => {
 }
 
 const createCaseTokenizer = (css: string) => () => {
+	let tokens = tokenize(css)
 	let count = 0
-	tokenize(css, () => ++count)
+
+	while (tokens()) {
+		++count
+	}
+
 	counter.value = count
 }
 
