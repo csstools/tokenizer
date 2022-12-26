@@ -1,5 +1,5 @@
 import * as cp from './src/lib/code-points.ts'
-import * as tt from './src/lib/token-types.ts'
+import * as tt from './src/lib/token.types.ts'
 import * as path from 'path'
 import { terser } from 'rollup-plugin-terser'
 import babel from '@rollup/plugin-babel'
@@ -17,6 +17,16 @@ const terserOptions = {
 		global_defs: {
 			...cp,
 			...tt,
+		},
+	},
+	keep_classnames: /^CSS\w+$/,
+	keep_fnames: /^(parse|tokenize)$/,
+}
+
+const terserParserOptions = {
+	ecma: 2020,
+	compress: {
+		global_defs: {
 		},
 	},
 	keep_classnames: /^CSS\w+$/,

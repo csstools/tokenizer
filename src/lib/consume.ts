@@ -2,7 +2,7 @@ import { State, Token } from '../tokenize.d'
 
 import * as cp from './code-points.js'
 import * as is from './is.js'
-import * as tt from './token-types.js'
+import * as tt from './token.types.js'
 
 /** Consumes and returns a token. [↗](https://drafts.csswg.org/css-syntax/#consume-token) */
 export const consume = (state: State) => {
@@ -34,7 +34,6 @@ export const consume = (state: State) => {
 				state.tick,
 				consumeAnyValue(state) + consumeAnyValue(state) + consumeIdentifierValue(state),
 				0,
-				// state.dump,
 			)
 			// #\!
 			if (is.validEscape(state.codeAt1, state.codeAt2)) return consumeAnyToken(
@@ -42,7 +41,6 @@ export const consume = (state: State) => {
 				state.tick,
 				consumeAnyValue(state) + consumeAnyValue(state) + consumeAnyValue(state) + consumeIdentifierValue(state),
 				0,
-				// state.dump,
 			)
 			break
 
@@ -69,7 +67,6 @@ export const consume = (state: State) => {
 				state.tick,
 				consumeAnyValue(state) + consumeAnyValue(state) + consumeNumberSansAdditiveValue(state),
 				consumeNumericUnitValue(state),
-				// state.dump,
 			)
 			// -.8
 			if (state.codeAt1 === cp.FULL_STOP && is.digit[state.codeAt2]) return consumeAnyToken(
@@ -77,7 +74,6 @@ export const consume = (state: State) => {
 				state.tick,
 				consumeAnyValue(state) + consumeAnyValue(state) + consumeAnyValue(state) + consumeNumberSansDecimalValue(state),
 				consumeNumericUnitValue(state),
-				// state.dump,
 			)
 		case state.codeAt0 === cp.FULL_STOP:
 			// .8
@@ -86,7 +82,6 @@ export const consume = (state: State) => {
 				state.tick,
 				consumeAnyValue(state) + consumeAnyValue(state) + consumeNumberSansDecimalValue(state),
 				consumeNumericUnitValue(state),
-				// state.dump,
 			)
 			break
 		case state.codeAt0 === cp.PLUS_SIGN:
@@ -96,7 +91,6 @@ export const consume = (state: State) => {
 				state.tick,
 				consumeAnyValue(state) + consumeAnyValue(state) + consumeNumberSansAdditiveValue(state),
 				consumeNumericUnitValue(state),
-				// state.dump,
 			)
 			// +.8
 			if (state.codeAt1 === cp.FULL_STOP && is.digit[state.codeAt2]) return consumeAnyToken(
@@ -104,7 +98,6 @@ export const consume = (state: State) => {
 				state.tick,
 				consumeAnyValue(state) + consumeAnyValue(state) + consumeAnyValue(state) + consumeNumberSansDecimalValue(state),
 				consumeNumericUnitValue(state),
-				// state.dump,
 			)
 			break
 		case is.digit[state.codeAt0]:
@@ -114,7 +107,6 @@ export const consume = (state: State) => {
 				state.tick,
 				consumeAnyValue(state) + consumeNumberSansAdditiveValue(state),
 				consumeNumericUnitValue(state),
-				// state.dump,
 			)
 
 		/* <atident-token> */
@@ -127,7 +119,6 @@ export const consume = (state: State) => {
 					state.tick,
 					consumeAnyValue(state) + consumeAnyValue(state) + consumeAnyValue(state) + consumeIdentifierValue(state),
 					0,
-					// state.dump,
 				)
 				// @-W
 				if (is.identifierStart[state.codeAt2] || !is.ascii[state.codeAt2]) return consumeAnyToken(
@@ -135,7 +126,6 @@ export const consume = (state: State) => {
 					state.tick,
 					consumeAnyValue(state) + consumeAnyValue(state) + consumeAnyValue(state) + consumeIdentifierValue(state),
 					0,
-					// state.dump,
 				)
 				// @-\!
 				if (is.validEscape(state.codeAt2, state.codeAt3)) return consumeAnyToken(
@@ -143,7 +133,6 @@ export const consume = (state: State) => {
 					state.tick,
 					consumeAnyValue(state) + consumeAnyValue(state) + consumeAnyValue(state) + consumeAnyValue(state) + consumeIdentifierValue(state),
 					0,
-					// state.dump,
 				)
 			}
 			// @W
@@ -152,7 +141,6 @@ export const consume = (state: State) => {
 				state.tick,
 				consumeAnyValue(state) + consumeAnyValue(state) + consumeIdentifierValue(state),
 				0,
-				// state.dump,
 			)
 			// @\!
 			if (is.validEscape(state.codeAt1, state.codeAt2)) return consumeAnyToken(
@@ -160,7 +148,6 @@ export const consume = (state: State) => {
 				state.tick,
 				consumeAnyValue(state) + consumeAnyValue(state) + consumeAnyValue(state) + consumeIdentifierValue(state),
 				0,
-				// state.dump,
 			)
 			break
 	}
@@ -172,7 +159,6 @@ export const consume = (state: State) => {
 		state.tick,
 		consumeAnyValue(state),
 		0,
-		// state.dump,
 	)
 }
 
@@ -215,7 +201,6 @@ const consumeIdentifierLikeToken = (state: State, tick: number, size: number) =>
 		tick,
 		size,
 		isFunction ? consumeAnyValue(state) : 0,
-		// state.dump,
 	)
 }
 
@@ -231,7 +216,6 @@ const consumeCommentToken = (state: State, lead: number, size: number, edge: num
 	}
 
 	return consumeAnyToken(tt.COMMENT, lead, size, edge)
-	// return consumeAnyToken(tt.COMMENT, lead, size, edge, state.dump)
 }
 
 /** Consumes and returns a space token. [↗](https://drafts.csswg.org/css-syntax/#whitespace-token-diagram) */
@@ -242,7 +226,6 @@ const consumeSpaceToken = (state: State, lead: number, size: number) => {
 	}
 
 	return consumeAnyToken(tt.SPACE, lead, size, 0)
-	// return consumeAnyToken(tt.SPACE, lead, size, 0, state.dump)
 }
 
 /** Consumes and returns a string token. [↗](https://drafts.csswg.org/css-syntax/#string-token-diagram) */
@@ -261,10 +244,8 @@ const consumeStringToken = (state: State, code: number, lead: number, size: numb
 	}
 
 	return consumeAnyToken(tt.STRING, lead, size, edge)
-	// return consumeAnyToken(tt.STRING, lead, size, edge, state.dump)
 }
 
-// const consumeAnyToken = (type: number, lead: number, size: number, edge: number, style: string): Token => ({
 const consumeAnyToken = (type: number, lead: number, size: number, edge: number): Token => ({
 	token: type,
 	enter: lead,
