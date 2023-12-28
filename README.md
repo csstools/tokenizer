@@ -73,6 +73,21 @@ const tokens = Array.from(tokenizeCSS(cssText)) // an array of CSSTokens
 </script>
 ```
 
+### Serialize tokens
+
+```js
+import { tokenize } from '@csstools/tokenizer'
+
+let cssOutput = '';
+for (const token of tokenize(cssText)) {
+  // mutate some tokens
+
+  cssOutput += token.lead + token.data + token.tail
+}
+
+console.log(cssOutput) // logs the CSS string
+```
+
 ## How it works
 
 The CSS tokenizer separates a string of CSS into tokens.
