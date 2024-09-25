@@ -3,6 +3,7 @@
  * @see https://www.unicode.org/Public/UCD/latest/ucd/NamesList.txt
  * @see https://unicode.org/charts/nameslist/n_0000.html
  */ /** */
+
 /** ␉ */
 const CHARACTER_TABULATION = 0x0009;
 /** ␊ */
