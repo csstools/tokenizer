@@ -1,6 +1,7 @@
 import * as fs from 'fs'
 import Benchmark from 'benchmark'
 import csstree1 from 'css-tree1'
+// @ts-expect-error no types
 import * as csstree2 from 'css-tree2/tokenizer'
 import postcss from 'postcss/lib/tokenize'
 

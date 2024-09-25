@@ -1,9 +1,6 @@
-import * as cp from './src/lib/code-points.ts'
-import * as tt from './src/lib/token-types.ts'
 import * as path from 'path'
-import { terser } from 'rollup-plugin-terser'
+import terser from '@rollup/plugin-terser'
 import babel from '@rollup/plugin-babel'
-import bundleSize from 'rollup-plugin-bundle-size'
 import MagicString from 'magic-string'
 
 const babelOptions = {
@@ -13,12 +10,7 @@ const babelOptions = {
 
 const terserOptions = {
 	ecma: 2020,
-	compress: {
-		global_defs: {
-			...cp,
-			...tt,
-		},
-	},
+	compress: {},
 }
 
 const resolveJsTsExtension = {
@@ -55,7 +47,6 @@ const config = /** @type {import('rollup').NormalizedInputOptions[]} */ ([
 		plugins: [
 			resolveJsTsExtension,
 			babel({ ...babelOptions }),
-			bundleSize()
 		],
 	},
 	{
@@ -71,7 +62,6 @@ const config = /** @type {import('rollup').NormalizedInputOptions[]} */ ([
 		plugins: [
 			resolveJsTsExtension,
 			babel({ ...babelOptions }),
-			bundleSize()
 		],
 	},
 	{
@@ -90,7 +80,6 @@ const config = /** @type {import('rollup').NormalizedInputOptions[]} */ ([
 			babel({ ...babelOptions }),
 			terser({ ...terserOptions }),
 			reduceImpact,
-			bundleSize(),
 		]
 	},
 	{
@@ -106,7 +95,6 @@ const config = /** @type {import('rollup').NormalizedInputOptions[]} */ ([
 		plugins: [
 			resolveJsTsExtension,
 			babel({ ...babelOptions }),
-			bundleSize()
 		],
 	},
 	{
@@ -122,7 +110,6 @@ const config = /** @type {import('rollup').NormalizedInputOptions[]} */ ([
 		plugins: [
 			resolveJsTsExtension,
 			babel({ ...babelOptions }),
-			bundleSize()
 		],
 	},
 	{
@@ -141,7 +128,6 @@ const config = /** @type {import('rollup').NormalizedInputOptions[]} */ ([
 			babel({ ...babelOptions }),
 			terser({ ...terserOptions }),
 			reduceImpact,
-			bundleSize(),
 		]
 	},
 ])
