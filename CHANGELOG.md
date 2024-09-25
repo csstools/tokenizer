@@ -1,5 +1,9 @@
 # Changes to CSS Tokenizer
 
+### 3.1.1 (September 25, 2024)
+
+- Maintenance release after updating dependencies
+
 ### 3.1.0 (August 27, 2021)
 
 - Added SCSS tokenization as `@csstools/tokenizer/tokenizeSCSS`.
